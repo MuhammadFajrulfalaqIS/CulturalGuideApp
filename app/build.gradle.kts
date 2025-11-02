@@ -48,6 +48,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.hilt.navigation.compose)
     implementation(libs.bundles.maps)
 //    implementation("com.google.firebase:firebase-analytics")
 //    implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
@@ -72,4 +73,5 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
 }
