@@ -8,8 +8,12 @@ plugins {
     id("com.google.dagger.hilt.android") version "2.57.1" apply false
 
     // Terapkan Plugin Google Services (untuk Maps)
-    alias(libs.plugins.googleServices) apply false
+//    alias(libs.plugins.googleServices) apply false
 
     // ⭐ PASTI DI SINI: Terapkan Plugin KSP
-    alias(libs.plugins.ksp) apply false
+//    alias(libs.plugins.ksp) apply false
+
+    id("com.google.devtools.ksp") version "2.2.21-2.0.4" apply false
+
+//    id("com.google.gms.google-services") version "4.4.4" apply false
 }
