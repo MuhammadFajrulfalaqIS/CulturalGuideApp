@@ -6,7 +6,7 @@ plugins {
 //    kotlin("kapt") // Required for Kotlin and KAPT
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp") // KSP untuk annotation processing (Hilt & Room)
-    id("com.google.gms.google-services")
+//    id("com.google.gms.google-services")
 }
 
 android {
@@ -49,8 +49,8 @@ android {
 
 dependencies {
     implementation(libs.bundles.maps)
-    implementation("com.google.firebase:firebase-analytics")
-    implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
+//    implementation("com.google.firebase:firebase-analytics")
+//    implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
     implementation("androidx.compose.material:material-icons-extended")
     implementation("io.coil-kt.coil3:coil-compose:3.3.0")
     implementation("androidx.navigation:navigation-compose:2.9.5")
