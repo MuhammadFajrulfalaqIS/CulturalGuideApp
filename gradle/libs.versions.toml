@@ -1,23 +1,26 @@
 [versions]
 agp = "8.13.0"
-kotlin = "2.0.21"
-coreKtx = "1.10.1"
+kotlin = "2.2.21"
+coreKtx = "1.17.0"
 junit = "4.13.2"
-junitVersion = "1.1.5"
-espressoCore = "3.5.1"
-lifecycleRuntimeKtx = "2.6.1"
-activityCompose = "1.8.0"
-composeBom = "2024.09.00"
-ksp = "2.2.21-2.0.4" # Versi KSP yang kompatibel dengan Kotlin 2.0.x
+junitVersion = "1.3.0"
+espressoCore = "3.7.0"
+lifecycleRuntimeKtx = "2.9.4"
+activityCompose = "1.11.0"
+composeBom = "2025.10.01"
+ksp = "2.2.21-2.0.4"# Versi KSP yang kompatibel dengan Kotlin 2.0.x
+googlePlayServicesMaps = "18.2.0" # Versi Play Services
+googlePlayServicesLocation = "21.0.1" # Versi Lokasi
 
 # --- Dependensi Baru ---
-hilt = "2.51.1" # Versi Hilt terbaru stabil
-retrofit = "2.11.0"
-okhttp = "4.12.0"
-room = "2.6.1" # Versi Room terbaru stabil
-googleMaps = "4.4.0" # Maps Compose SDK
-lifecycle = "2.8.3" # Lifecycle & ViewModel
-googleServices = "4.4.2"
+hilt = "2.57.1" # Versi Hilt terbaru stabil
+retrofit = "3.0.0"
+okhttp = "5.3.0"
+room = "2.8.3" # Versi Room terbaru stabil
+googleMaps = "6.12.1" # Maps Compose SDK
+lifecycle = "2.9.4" # Lifecycle & ViewModel
+googleServices = "4.4.4"
+foundation = "1.9.4"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -57,6 +60,7 @@ location = { group = "com.google.android.gms", name = "play-services-location", 
 # Lifecycle/ViewModel
 lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
 lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
