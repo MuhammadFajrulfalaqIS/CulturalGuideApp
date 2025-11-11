@@ -31,6 +31,9 @@ import com.example.cultural_navigation_papb.data.models.prambananHighlights
 import com.example.cultural_navigation_papb.navigation.Destinations
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+// --- Impor untuk Preview ---
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.cultural_navigation_papb.ui.theme.CulturalnavigationpapbTheme
 
 // Tambahkan dependensi: implementation("io.coil-kt:coil-compose:2.6.0")
 // Tambahkan dependensi: implementation("androidx.compose.material:material-icons-extended")
@@ -216,6 +219,41 @@ fun HomeBottomNavBar(onHomeClick: () -> Unit, onProfileClick: () -> Unit) {
             onClick = onProfileClick,
             icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
             label = { Text(Destinations.PROFILE) }
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 640)
+@Composable
+fun HomeScreenPreview() {
+    CulturalnavigationpapbTheme {
+        HomeScreen(
+            onNavigateToMap = {},
+            onNavigateToList = {},
+            onNavigateToProfile = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ActionButtonPreview() {
+    CulturalnavigationpapbTheme {
+        ActionButton(
+            text = "Explore",
+            icon = Icons.Default.Place,
+            onClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HomeBottomNavBarPreview() {
+    CulturalnavigationpapbTheme {
+        HomeBottomNavBar(
+            onHomeClick = {},
+            onProfileClick = {}
         )
     }
 }
