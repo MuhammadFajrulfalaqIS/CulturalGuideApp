@@ -1,9 +1,13 @@
 package com.example.cultural_navigation_papb.data.models
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
 // File: data/models/Place.kt
 
-
+@Entity(tableName = "places")
 data class Place(
+    @PrimaryKey
     val id: String,
     val name: String,
     val description: String,
