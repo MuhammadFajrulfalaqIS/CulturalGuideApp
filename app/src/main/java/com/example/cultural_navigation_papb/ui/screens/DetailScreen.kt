@@ -39,3 +39,4 @@ fun DetailScreenPreview() {
         DetailScreen()
     }
 }
+//
