@@ -50,6 +50,9 @@ android {
 dependencies {
     implementation(libs.hilt.navigation.compose)
     implementation(libs.bundles.maps)
+    // Room Database
+    implementation(libs.bundles.room)
+    ksp(libs.room.compiler)
 //    implementation("com.google.firebase:firebase-analytics")
 //    implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
     implementation("androidx.compose.material:material-icons-extended")
