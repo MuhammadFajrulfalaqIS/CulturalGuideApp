@@ -24,6 +24,13 @@ class PlaceViewModel @Inject constructor() : ViewModel() {
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     /**
+     * Helper function to find a place by its ID
+     */
+    fun getPlaceById(placeId: String): Place? {
+        return _places.value.find { it.id == placeId }
+    }
+
+    /**
      * Data statis candi-candi di kompleks Prambanan
      * Tidak perlu database karena data tidak berubah
      */
