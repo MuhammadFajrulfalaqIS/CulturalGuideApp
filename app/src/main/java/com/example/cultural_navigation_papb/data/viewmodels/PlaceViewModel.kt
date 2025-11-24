@@ -2,6 +2,7 @@ package com.example.cultural_navigation_papb.data.viewmodels
 
 import androidx.lifecycle.ViewModel
 import com.example.cultural_navigation_papb.data.models.Place
+import com.example.cultural_navigation_papb.data.models.allPrambananPlaces
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +17,7 @@ import javax.inject.Inject
 class PlaceViewModel @Inject constructor() : ViewModel() {
 
     // State untuk menyimpan list places
-    private val _places = MutableStateFlow<List<Place>>(getStaticPlaces())
+    private val _places = MutableStateFlow<List<Place>>(allPrambananPlaces)
     val places: StateFlow<List<Place>> = _places.asStateFlow()
 
     // State untuk loading
@@ -29,59 +30,4 @@ class PlaceViewModel @Inject constructor() : ViewModel() {
     fun getPlaceById(placeId: String): Place? {
         return _places.value.find { it.id == placeId }
     }
-
-    /**
-     * Data statis candi-candi di kompleks Prambanan
-     * Tidak perlu database karena data tidak berubah
-     */
-    private fun getStaticPlaces() = listOf(
-        Place(
-            id = "1",
-            name = "Candi Siwa (Loro Jonggrang)",
-            description = "Candi utama dan tertinggi (47m) yang didedikasikan untuk Dewa Siwa. Berisi relief kisah Ramayana yang sangat indah.",
-            imageUrl = "https://example.com/siwa.jpg"
-        ),
-        Place(
-            id = "2",
-            name = "Candi Wisnu",
-            description = "Berada di sebelah utara Candi Siwa, didedikasikan untuk Dewa Wisnu sang pemelihara alam semesta.",
-            imageUrl = "https://example.com/wisnu.jpg"
-        ),
-        Place(
-            id = "3",
-            name = "Candi Brahma",
-            description = "Berada di sebelah selatan Candi Siwa, didedikasikan untuk Dewa Brahma sang pencipta alam semesta.",
-            imageUrl = "https://example.com/brahma.jpg"
-        ),
-        Place(
-            id = "4",
-            name = "Candi Nandi",
-            description = "Candi yang berisi arca Nandi, kendaraan Dewa Siwa. Terletak berhadapan dengan Candi Siwa.",
-            imageUrl = "https://example.com/nandi.jpg"
-        ),
-        Place(
-            id = "5",
-            name = "Candi Angsa",
-            description = "Candi yang berisi arca angsa, kendaraan Dewa Brahma. Terletak berhadapan dengan Candi Brahma.",
-            imageUrl = "https://example.com/angsa.jpg"
-        ),
-        Place(
-            id = "6",
-            name = "Candi Garuda",
-            description = "Candi yang berisi arca Garuda, kendaraan Dewa Wisnu. Terletak berhadapan dengan Candi Wisnu.",
-            imageUrl = "https://example.com/garuda.jpg"
-        ),
-        Place(
-            id = "7",
-            name = "Candi Plaosan",
-            description = "Kompleks candi Buddha kembar yang indah, terletak sekitar 1 km dari Prambanan. Dibangun pada abad ke-9.",
-            imageUrl = "https://example.com/plaosan.jpg"
-        ),
-        Place(
-            id = "8",
-            name = "Candi Sewu",
-            description = "Kompleks candi Buddha terbesar kedua di Jawa Tengah setelah Borobudur. Memiliki 249 candi.",
-            imageUrl = "https://example.com/sewu.jpg"
-        )
-    )
 }

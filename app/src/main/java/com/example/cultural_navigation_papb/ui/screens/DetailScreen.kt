@@ -63,13 +63,13 @@ fun DetailScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .verticalScroll(rememberScrollState()) // Agar bisa discroll
+                    .verticalScroll(rememberScrollState())
             ) {
-                // 1. Gambar Header
+                // 1. Header Image
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(250.dp)
+                        .height(280.dp)
                 ) {
                     val painter = rememberAsyncImagePainter(model = place.imageUrl)
                     Image(
@@ -80,8 +80,9 @@ fun DetailScreen(
                     )
                 }
 
-                // 2. Konten Teks
+                // 2. Content Section
                 Column(modifier = Modifier.padding(16.dp)) {
+                    // Title
                     Text(
                         text = place.name,
                         style = MaterialTheme.typography.headlineMedium,
@@ -91,7 +92,7 @@ fun DetailScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Chip Kategori (Opsional/Hiasan)
+                    // Category Chip
                     SuggestionChip(
                         onClick = { },
                         label = { Text("Wisata Sejarah") }
@@ -99,34 +100,103 @@ fun DetailScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // Overview Section
+                    SectionTitle("Tentang")
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Deskripsi",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        text = place.description,
+                        text = place.detailedDescription,
                         style = MaterialTheme.typography.bodyLarge,
                         lineHeight = 24.sp,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+
+                    // Historical Information Section
+                    if (place.historicalInfo.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        SectionTitle("Sejarah")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = place.historicalInfo,
+                            style = MaterialTheme.typography.bodyLarge,
+                            lineHeight = 24.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    // Architecture Section
+                    if (place.architectureInfo.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        SectionTitle("Arsitektur")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = place.architectureInfo,
+                            style = MaterialTheme.typography.bodyLarge,
+                            lineHeight = 24.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    // Visiting Information Section
+                    if (place.visitingInfo.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer
+                            )
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                SectionTitle("Informasi Kunjungan")
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = place.visitingInfo,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    lineHeight = 22.sp,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         } else {
-            // Tampilan jika ID tidak ditemukan (Error State)
+            // Error State - Place not found
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Data lokasi tidak ditemukan.")
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Data lokasi tidak ditemukan",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(onClick = onNavigateBack) {
+                        Text("Kembali")
+                    }
+                }
             }
         }
     }
+}
+
+// Helper Composable for Section Titles
+@Composable
+private fun SectionTitle(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary
+    )
 }
 
 
