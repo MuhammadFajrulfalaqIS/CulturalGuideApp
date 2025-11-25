@@ -210,4 +210,69 @@ fun DetailScreenPreview() {
         )
     }
 }
-//
+
+// Helper function untuk dummy data
+private fun getDummyPlace(placeId: String): Place {
+    return when (placeId) {
+        "candi_siwa" -> Place(
+            id = "candi_siwa",
+            name = "Candi Siwa",
+            description = "Candi utama dan tertinggi di kompleks Prambanan, didedikasikan untuk Dewa Siwa. Candi ini memiliki tinggi 47 meter dan merupakan mahakarya arsitektur Hindu. Relief di dinding candi menceritakan kisah Ramayana.",
+            imageUrl = "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=400&fit=crop",
+            latitude = -7.7520,
+            longitude = 110.4891,
+            category = "candi_utama",
+            isAvailable = true,
+            openTime = "06:00",
+            closeTime = "17:00",
+            ticketPrice = 50000,
+            rating = 4.5f,
+            reviewCount = 234
+        )
+        "candi_wisnu" -> Place(
+            id = "candi_wisnu",
+            name = "Candi Wisnu",
+            description = "Candi di sebelah utara Candi Siwa, didedikasikan untuk Dewa Wisnu sebagai pemelihara alam semesta dalam trinitas Hindu. Relief di candi ini menggambarkan kisah Krisna.",
+            imageUrl = "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=400&fit=crop",
+            latitude = -7.7515,
+            longitude = 110.4895,
+            category = "candi_utama",
+            isAvailable = true,
+            openTime = "06:00",
+            closeTime = "17:00",
+            ticketPrice = 0,
+            rating = 4.3f,
+            reviewCount = 156
+        )
+        "candi_sewu" -> Place(
+            id = "candi_sewu",
+            name = "Candi Sewu",
+            description = "Kompleks candi Buddha terbesar kedua setelah Borobudur, terletak sekitar 800 meter selatan Candi Prambanan. Nama aslinya adalah Manjusrigrha. Kompleks ini memiliki 249 candi perwara.",
+            imageUrl = "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=400&fit=crop",
+            latitude = -7.7600,
+            longitude = 110.4920,
+            category = "candi_buddha",
+            isAvailable = true,
+            openTime = "06:00",
+            closeTime = "17:00",
+            ticketPrice = 30000,
+            rating = 4.6f,
+            reviewCount = 189
+        )
+        else -> Place(
+            id = "default",
+            name = "Candi Prambanan",
+            description = "Kompleks candi Hindu terbesar di Indonesia yang dibangun pada abad ke-9. Terdiri dari tiga candi utama yang didedikasikan untuk Trimurti: Brahma, Wisnu, dan Siwa.",
+            imageUrl = "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=400&fit=crop",
+            latitude = -7.7520,
+            longitude = 110.4891,
+            category = "candi_utama",
+            isAvailable = true,
+            openTime = "06:00",
+            closeTime = "17:00",
+            ticketPrice = 50000,
+            rating = 4.7f,
+            reviewCount = 1245
+        )
+    }
+}

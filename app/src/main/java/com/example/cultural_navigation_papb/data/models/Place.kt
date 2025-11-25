@@ -7,6 +7,7 @@ import com.example.cultural_navigation_papb.R
 // File: data/models/Place.kt
 
 @Entity(tableName = "places")
+@TypeConverters(Converters::class)
 data class Place(
     @PrimaryKey
     val id: String,
