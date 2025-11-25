@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.cultural_navigation_papb.R
 import com.example.cultural_navigation_papb.data.models.Place
 import com.example.cultural_navigation_papb.data.viewmodels.PlaceViewModel
 import com.example.cultural_navigation_papb.ui.theme.CulturalnavigationpapbTheme
@@ -130,9 +131,9 @@ fun ListScreenPreview() {
     CulturalnavigationpapbTheme {
         // Preview dengan data dummy
         val dummyPlaces = listOf(
-            Place("1", "Candi Siwa", "Candi utama dan tertinggi (47m) yang didedikasikan untuk Dewa Siwa", ""),
-            Place("2", "Candi Wisnu", "Didedikasikan untuk Dewa Wisnu sang pemelihara alam semesta", ""),
-            Place("3", "Candi Brahma", "Didedikasikan untuk Dewa Brahma sang pencipta alam semesta", "")
+            Place("1", "Candi Siwa", "Candi utama dan tertinggi (47m) yang didedikasikan untuk Dewa Siwa", R.drawable.arcasiwa),
+            Place("2", "Candi Wisnu", "Didedikasikan untuk Dewa Wisnu sang pemelihara alam semesta", R.drawable.arcawisnu),
+            Place("3", "Candi Brahma", "Didedikasikan untuk Dewa Brahma sang pencipta alam semesta", R.drawable.arcabrahma)
         )
 
         Scaffold(
