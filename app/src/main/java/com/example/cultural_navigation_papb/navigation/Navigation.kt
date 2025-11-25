@@ -6,6 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.example.cultural_navigation_papb.ui.screens.*
 
 // Definisikan rute/destinasi aplikasi agar tidak ada hardcoding string
@@ -41,7 +43,8 @@ fun CultureGuideNavHost() {
         // Slide 2: Map/Eksplorasi Lokasi
         composable(Destinations.MAP) {
             MapScreen(
-                onNavigateToDetail = { placeId -> navController.navigate("detail/$placeId") }
+                onNavigateToDetail = { placeId -> navController.navigate("detail/$placeId") },
+                onBackClick = { navController.navigateUp() }
                 // Navigasi Bottom Bar/Kembali akan kita tangani di Composable Frame selanjutnya
             )
         }
@@ -55,6 +58,12 @@ fun CultureGuideNavHost() {
 
         // Target navigasi lain (Profile dan Detail)
         composable(Destinations.PROFILE) { ProfileScreen() }
-        composable(Destinations.DETAIL) { DetailScreen() }
+        composable(
+            route = Destinations.DETAIL,
+            arguments = listOf(navArgument("placeId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val placeId = backStackEntry.arguments?.getString("placeId") ?: ""
+            DetailScreen(placeId = placeId)
+        }
     }
 }

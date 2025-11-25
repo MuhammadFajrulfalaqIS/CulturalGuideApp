@@ -25,7 +25,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.rememberAsyncImagePainter
+import coil.compose.AsyncImagePainter
+import coil.compose.rememberAsyncImagePainter
 import com.example.cultural_navigation_papb.data.models.Place
 import com.example.cultural_navigation_papb.data.models.prambananHighlights
 import com.example.cultural_navigation_papb.navigation.Destinations

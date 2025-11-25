@@ -48,16 +48,37 @@ android {
 }
 
 dependencies {
+    // Hilt
+    implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
+    ksp(libs.hilt.compiler)
+
+    // Maps
     implementation(libs.bundles.maps)
-    // Room Database
+
+    // Room
     implementation(libs.bundles.room)
     ksp(libs.room.compiler)
-//    implementation("com.google.firebase:firebase-analytics")
-//    implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation("io.coil-kt.coil3:coil-compose:3.3.0")
+
+    // Lifecycle
+    implementation(libs.bundles.lifecycle)
+
+    // Image Loading
+    implementation(libs.coil.compose)
+
+    // JSON Parsing
+    implementation(libs.gson)
+
+    // Navigation
     implementation("androidx.navigation:navigation-compose:2.9.5")
+
+    // Material Icons
+    implementation("androidx.compose.material:material-icons-extended")
+
+    // Permissions
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
+
+    // Core Compose
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -66,9 +87,9 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    implementation("com.google.dagger:hilt-android:2.57.1")
     implementation(libs.androidx.compose.foundation)
-    ksp("com.google.dagger:hilt-android-compiler:2.57.1")
+
+    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -76,5 +97,4 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
 }

@@ -130,9 +130,9 @@ fun ListScreenPreview() {
     CulturalnavigationpapbTheme {
         // Preview dengan data dummy
         val dummyPlaces = listOf(
-            Place("1", "Candi Siwa", "Candi utama dan tertinggi (47m) yang didedikasikan untuk Dewa Siwa", ""),
-            Place("2", "Candi Wisnu", "Didedikasikan untuk Dewa Wisnu sang pemelihara alam semesta", ""),
-            Place("3", "Candi Brahma", "Didedikasikan untuk Dewa Brahma sang pencipta alam semesta", "")
+            Place("1", "Candi Siwa", "Candi utama dan tertinggi (47m) yang didedikasikan untuk Dewa Siwa", "", -7.7520, 110.4891, "candi_utama"),
+            Place("2", "Candi Wisnu", "Didedikasikan untuk Dewa Wisnu sang pemelihara alam semesta", "", -7.7515, 110.4896, "candi_utama"),
+            Place("3", "Candi Brahma", "Didedikasikan untuk Dewa Brahma sang pencipta alam semesta", "", -7.7525, 110.4886, "candi_utama")
         )
 
         Scaffold(
