@@ -1,249 +1,213 @@
 package com.example.cultural_navigation_papb.ui.screens
 
+// --- Impor untuk Composable & Preview ---
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+//import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.ConfirmationNumber
-import androidx.compose.material.icons.filled.Star
+//import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
+//import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
-import coil.compose.AsyncImage
-import com.example.cultural_navigation_papb.data.models.Place
-import com.example.cultural_navigation_papb.data.viewmodels.ReviewViewModel
-import com.example.cultural_navigation_papb.ui.components.ReviewForm
-import com.example.cultural_navigation_papb.ui.components.ReviewList
+import coil3.compose.rememberAsyncImagePainter
+import com.example.cultural_navigation_papb.data.viewmodels.PlaceViewModel
+import com.example.cultural_navigation_papb.ui.theme.CulturalnavigationpapbTheme
 
+
+// Diubah dari 'class' menjadi 'Composable fun'
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
-    placeId: String? = null,
-    navController: NavController? = null,
-    reviewViewModel: ReviewViewModel = hiltViewModel()
+    placeId: String,
+    onNavigateBack: () -> Unit,
+    viewModel: PlaceViewModel = hiltViewModel()
 ) {
-    // Untuk sekarang, kita gunakan data dummy jika placeId null
-    // Dalam implementasi nyata, placeId akan berasal dari navigation
-    val currentPlace = remember(placeId) {
-        if (placeId != null) {
-            // Load dari database di sini nanti
-            getDummyPlace(placeId)
-        } else {
-            getDummyPlace("candi_siwa")
-        }
-    }
-
-    // Load reviews saat screen dimuat
-    LaunchedEffect(placeId) {
-        placeId?.let { reviewViewModel.loadReviewsForPlace(it) }
-    }
-
+    // Ambil data place berdasarkan ID
+    // Karena data statis, kita bisa langsung mengambilnya
+    val place = remember(placeId) { viewModel.getPlaceById(placeId) }
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Detail Candi") },
+                title = { Text(text = "Detail Lokasi") },
                 navigationIcon = {
-                    IconButton(onClick = { navController?.navigateUp() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Kembali"
+                        )
                     }
                 }
             )
         }
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Header Image
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        if (place != null) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                // 1. Header Image
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(280.dp)
                 ) {
-                    Box {
-                        AsyncImage(
-                            model = currentPlace.imageUrl,
-                            contentDescription = currentPlace.name,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp),
-                            contentScale = ContentScale.Crop
-                        )
+                    val painter = rememberAsyncImagePainter(model = place.imageUrl)
+                    Image(
+                        painter = painter,
+                        contentDescription = place.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
 
-                        // Overlay Rating Badge
-                        Surface(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(12.dp),
-                            color = Color.Black.copy(alpha = 0.7f),
-                            shape = RoundedCornerShape(16.dp)
+                // 2. Content Section
+                Column(modifier = Modifier.padding(16.dp)) {
+                    // Title
+                    Text(
+                        text = place.name,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Category Chip
+                    SuggestionChip(
+                        onClick = { },
+                        label = { Text("Wisata Sejarah") }
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Overview Section
+                    SectionTitle("Tentang")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = place.detailedDescription,
+                        style = MaterialTheme.typography.bodyLarge,
+                        lineHeight = 24.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+
+                    // Historical Information Section
+                    if (place.historicalInfo.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        SectionTitle("Sejarah")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = place.historicalInfo,
+                            style = MaterialTheme.typography.bodyLarge,
+                            lineHeight = 24.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    // Architecture Section
+                    if (place.architectureInfo.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        SectionTitle("Arsitektur")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = place.architectureInfo,
+                            style = MaterialTheme.typography.bodyLarge,
+                            lineHeight = 24.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    // Visiting Information Section
+                    if (place.visitingInfo.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer
+                            )
                         ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    Icons.Default.Star,
-                                    contentDescription = null,
-                                    tint = Color(0xFFFFD700),
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(Modifier.width(4.dp))
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                SectionTitle("Informasi Kunjungan")
+                                Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = String.format("%.1f", currentPlace.rating),
-                                    color = Color.White,
-                                    fontSize = 12.sp
+                                    text = place.visitingInfo,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    lineHeight = 22.sp,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                             }
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
-
-            // Basic Info
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        } else {
+            // Error State - Place not found
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text(
-                            text = currentPlace.name,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-
-                        Text(
-                            text = currentPlace.category.replace("_", " "),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.typography.bodyMedium.color.copy(alpha = 0.7f),
-                            modifier = Modifier.padding(bottom = 12.dp)
-                        )
-
-                        Text(
-                            text = currentPlace.description,
-                            style = MaterialTheme.typography.bodyMedium,
-                            lineHeight = 20.sp
-                        )
+                    Text(
+                        text = "Data lokasi tidak ditemukan",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(onClick = onNavigateBack) {
+                        Text("Kembali")
                     }
                 }
-            }
-
-            // Quick Info Cards
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Location Card
-                    InfoCard(
-                        icon = Icons.Default.LocationOn,
-                        title = "Lokasi",
-                        value = "${String.format("%.4f", currentPlace.latitude)}, ${String.format("%.4f", currentPlace.longitude)}",
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    // Open Time Card
-                    InfoCard(
-                        icon = Icons.Default.Schedule,
-                        title = "Jam Buka",
-                        value = "${currentPlace.openTime} - ${currentPlace.closeTime}",
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-
-            // Ticket Price
-            if (currentPlace.ticketPrice > 0) {
-                item {
-                    InfoCard(
-                        icon = Icons.Default.ConfirmationNumber,
-                        title = "Harga Tiket",
-                        value = "Rp ${currentPlace.ticketPrice}",
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
-
-            // Review Form
-            item {
-                ReviewForm(
-                    userId = "user_123", // Dalam implementasi nyata, dari user session
-                    userName = "Wisatawan",
-                    onReviewSubmitted = {
-                        // Refresh reviews setelah submit
-                        placeId?.let { reviewViewModel.loadReviewsForPlace(it) }
-                    }
-                )
-            }
-
-            // Reviews List
-            item {
-                ReviewList()
-            }
-
-            // Spacer untuk bottom padding
-            item {
-                Spacer(Modifier.height(16.dp))
             }
         }
     }
 }
 
+// Helper Composable for Section Titles
 @Composable
-private fun InfoCard(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    title: String,
-    value: String,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier,
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.Center
-            )
-        }
+private fun SectionTitle(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary
+    )
+}
+
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 640)
+@Composable
+fun DetailScreenPreview() {
+    CulturalnavigationpapbTheme {
+        DetailScreen(
+            placeId = "sample-id",
+            onNavigateBack = {}
+        )
     }
 }
 
