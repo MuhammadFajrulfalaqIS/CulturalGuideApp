@@ -18,6 +18,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -61,11 +62,26 @@ fun HomeScreen(
         containerColor = Color(0xFFF5F5F5),
         modifier = modifier.fillMaxSize()
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            // Background shadow image
+            Image(
+                painter = rememberAsyncImagePainter(model = R.drawable.prambanan_shadow),
+                contentDescription = "Prambanan Shadow",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .alpha(0.75f), // Subtle shadow effect
+                alignment = Alignment.Center
+            )
+
+            // Main content over the background
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
             // Header with dark brown background and temple icon
             Box(
                 modifier = Modifier
@@ -138,6 +154,7 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             )
+            }
         }
     }
 }
