@@ -23,10 +23,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.rememberAsyncImagePainter
 import com.example.cultural_navigation_papb.R
 import com.example.cultural_navigation_papb.data.models.Place
 import com.example.cultural_navigation_papb.data.models.prambananHighlights
@@ -69,7 +69,7 @@ fun HomeScreen(
         ) {
             // Background shadow image
             Image(
-                painter = rememberAsyncImagePainter(model = R.drawable.prambanan_shadow),
+                painter = painterResource(id = R.drawable.prambanan_shadow),
                 contentDescription = "Prambanan Shadow",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -200,9 +200,8 @@ fun PrambananCarousel(highlights: List<Place>) {
                             .fillMaxHeight()
                     ) {
                         // Background image
-                        val painter = rememberAsyncImagePainter(model = place.imageUrl)
                         Image(
-                            painter = painter,
+                            painter = painterResource(id = place.imageUrl),
                             contentDescription = place.name,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize()
@@ -287,7 +286,7 @@ fun PrambananCarousel(highlights: List<Place>) {
 fun ImageActionCard(
     text: String,
     onClick: () -> Unit,
-    imageUrl: Any, // Changed from String to Any to support both URLs and resource IDs
+    imageUrl: Int, // Changed to Int for drawable resource IDs
     badgeText: String? = null,
     modifier: Modifier = Modifier
 ) {
@@ -299,10 +298,9 @@ fun ImageActionCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // Background image - Coil can handle both URLs and resource IDs
-            val painter = rememberAsyncImagePainter(model = imageUrl)
+            // Background image - using drawable resource
             Image(
-                painter = painter,
+                painter = painterResource(id = imageUrl),
                 contentDescription = text,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
@@ -518,7 +516,7 @@ fun ImageActionCardPreview() {
         ImageActionCard(
             text = "Explore",
             onClick = {},
-            imageUrl = "https://picsum.photos/400/300"
+            imageUrl = R.drawable.explore_pic // Use drawable resource instead of URL
         )
     }
 }
