@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -77,7 +78,7 @@ fun DetailScreen(
                         text = place.name,
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = Color(0xFF4A3428) // Dark brown
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -132,7 +133,7 @@ fun DetailScreen(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer
+                                containerColor = Color(0xFFC9A882) // Light brown
                             )
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
@@ -142,7 +143,7 @@ fun DetailScreen(
                                     text = place.visitingInfo,
                                     style = MaterialTheme.typography.bodyMedium,
                                     lineHeight = 22.sp,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    color = Color(0xFF4A3428) // Dark brown for text on light brown background
                                 )
                             }
                         }
@@ -185,7 +186,7 @@ private fun SectionTitle(title: String) {
         text = title,
         style = MaterialTheme.typography.titleLarge,
         fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.primary
+        color = Color(0xFF4A3428) // Dark brown
     )
 }
 
