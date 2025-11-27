@@ -1,15 +1,15 @@
 package com.example.cultural_navigation_papb.ui.screens
 
-// --- Impor untuk Composable & Preview ---
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material3.*
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,21 +20,28 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.cultural_navigation_papb.data.viewmodels.InboxViewModel
 import com.example.cultural_navigation_papb.data.viewmodels.PlaceViewModel
 import com.example.cultural_navigation_papb.ui.theme.CulturalnavigationpapbTheme
 
-
-// Diubah dari 'class' menjadi 'Composable fun'
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
     placeId: String,
     onNavigateBack: () -> Unit,
-    viewModel: PlaceViewModel = hiltViewModel()
+    // ViewModel untuk mengambil data tempat (Data Asli)
+    viewModel: PlaceViewModel = hiltViewModel(),
+    // ViewModel untuk fitur download offline (Database Lokal)
+    inboxViewModel: InboxViewModel = viewModel()
 ) {
-    // Ambil data place berdasarkan ID
-    // Karena data statis, kita bisa langsung mengambilnya
+    // 1. Ambil data place berdasarkan ID
     val place = remember(placeId) { viewModel.getPlaceById(placeId) }
+
+    // 2. Cek apakah tempat ini sudah didownload sebelumnya
+    // 'collectAsState' akan memantau perubahan database secara real-time
+    val isDownloaded by inboxViewModel.isDownloaded(placeId).collectAsState(initial = false)
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -48,6 +55,36 @@ fun DetailScreen(
                     }
                 }
             )
+        },
+        // 3. Tambahkan Tombol Aksi (FAB) untuk Download
+        floatingActionButton = {
+            if (place != null) {
+                FloatingActionButton(
+                    onClick = {
+                        if (isDownloaded) {
+                            // Jika sudah ada, hapus dari inbox
+                            inboxViewModel.removePlace(place.id)
+                        } else {
+                            // Jika belum, simpan ke inbox
+                            inboxViewModel.downloadPlace(
+                                id = place.id,
+                                name = place.name,
+                                desc = place.detailedDescription, // Simpan deskripsi lengkap
+                                imageResId = place.imageUrl // Simpan ID gambar
+                            )
+                        }
+                    },
+                    // Ubah warna: Hijau jika tersimpan, Primary jika belum
+                    containerColor = if (isDownloaded) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary,
+                    contentColor = Color.White
+                ) {
+                    // Ubah ikon: Ceklis jika tersimpan, Panah bawah jika belum
+                    Icon(
+                        imageVector = if (isDownloaded) Icons.Default.Check else Icons.Default.Download,
+                        contentDescription = if (isDownloaded) "Hapus dari Offline" else "Simpan Offline"
+                    )
+                }
+            }
         }
     ) { paddingValues ->
         if (place != null) {
@@ -57,7 +94,7 @@ fun DetailScreen(
                     .padding(paddingValues)
                     .verticalScroll(rememberScrollState())
             ) {
-                // 1. Header Image
+                // --- 1. Header Image ---
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -71,7 +108,7 @@ fun DetailScreen(
                     )
                 }
 
-                // 2. Content Section
+                // --- 2. Content Section ---
                 Column(modifier = Modifier.padding(16.dp)) {
                     // Title
                     Text(
@@ -143,13 +180,14 @@ fun DetailScreen(
                                     text = place.visitingInfo,
                                     style = MaterialTheme.typography.bodyMedium,
                                     lineHeight = 22.sp,
-                                    color = Color(0xFF4A3428) // Dark brown for text on light brown background
+                                    color = Color(0xFF4A3428) // Dark brown text
                                 )
                             }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    // Tambahan Spacer di bawah agar konten tidak tertutup FAB
+                    Spacer(modifier = Modifier.height(80.dp))
                 }
             }
         } else {
@@ -190,7 +228,6 @@ private fun SectionTitle(title: String) {
     )
 }
 
-
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable
 fun DetailScreenPreview() {
@@ -201,4 +238,3 @@ fun DetailScreenPreview() {
         )
     }
 }
-

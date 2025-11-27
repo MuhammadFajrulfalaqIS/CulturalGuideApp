@@ -12,14 +12,16 @@ import com.example.cultural_navigation_papb.data.models.Review
 import com.example.cultural_navigation_papb.data.converters.Converters
 import com.example.cultural_navigation_papb.data.models.User
 import com.example.cultural_navigation_papb.data.dao.UserDao
+import com.example.cultural_navigation_papb.data.models.SavedPlace
+import com.example.cultural_navigation_papb.data.dao.SavedPlaceDao
 
 /**
  * Room Database untuk aplikasi Cultural Navigation
  * Menyimpan data tempat wisata dan review
  */
 @Database(
-    entities = [Place::class, Review::class, User::class],
-    version = 3, // Update version karena ada entity baru
+    entities = [Place::class, Review::class, User::class, SavedPlace::class],
+    version = 4, // Update version karena ada entity baru
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -28,6 +30,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun placeDao(): PlaceDao
     abstract fun reviewDao(): ReviewDao
     abstract fun userDao(): UserDao
+    abstract fun savedPlaceDao(): SavedPlaceDao
 
     companion object {
         @Volatile

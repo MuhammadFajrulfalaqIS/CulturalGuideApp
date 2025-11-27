@@ -1,14 +1,13 @@
-// File: ui/screens/HomeScreen.kt
 package com.example.cultural_navigation_papb.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -25,19 +24,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.cultural_navigation_papb.R
 import com.example.cultural_navigation_papb.data.models.Place
 import com.example.cultural_navigation_papb.data.models.prambananHighlights
 import com.example.cultural_navigation_papb.data.models.prambananSummaries
-import kotlinx.coroutines.delay
-// --- Impor untuk Preview ---
-import androidx.compose.ui.tooling.preview.Preview
+import com.example.cultural_navigation_papb.data.viewmodels.AuthViewModel
 import com.example.cultural_navigation_papb.ui.theme.CulturalnavigationpapbTheme
-
-// Tambahkan dependensi: implementation("io.coil-kt:coil-compose:2.6.0")
-// Tambahkan dependensi: implementation("androidx.compose.material:material-icons-extended")
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,16 +42,21 @@ fun HomeScreen(
     onNavigateToMap: () -> Unit,
     onNavigateToList: () -> Unit,
     onNavigateToProfile: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    // Inject AuthViewModel untuk mengambil data user
+    authViewModel: AuthViewModel = viewModel()
 ) {
-    // Define brown color scheme matching the image
+    // Ambil data user saat ini (nama, email, foto) dari ViewModel
+    val user by authViewModel.currentUser.collectAsState()
+
+    // Warna tema coklat
     val darkBrown = Color(0xFF3E2723)
     val lightBrown = Color(0xFF5D4037)
 
     Scaffold(
         bottomBar = {
             HomeBottomNavBar(
-                onHomeClick = { /* Do nothing, already on Home */ },
+                onHomeClick = { /* Sudah di Home */ },
                 onProfileClick = onNavigateToProfile,
                 backgroundColor = darkBrown
             )
@@ -74,105 +76,99 @@ fun HomeScreen(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
-                    .alpha(0.75f), // Subtle shadow effect
+                    .alpha(0.75f),
                 alignment = Alignment.Center
             )
 
-            // Main content over the background
+            // Main content
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
-            // Header with dark brown background and temple icon
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(darkBrown)
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
+                // --- HEADER: Menampilkan Nama User ---
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(darkBrown)
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
                 ) {
-                    // Temple icon placeholder - you can replace with actual icon/image
-                    Icon(
-                        imageVector = Icons.Default.Place,
-                        contentDescription = "Temple Icon",
-                        tint = Color.White,
-                        modifier = Modifier.size(32.dp)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Place,
+                            contentDescription = "Temple Icon",
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        // Menampilkan Nama User Dinamis
+                        Text(
+                            text = "Selamat Datang, ${user?.name ?: "Pengunjung"}!",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
+
+                // Carousel Section
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 16.dp)
+                ) {
+                    PrambananCarousel(highlights = prambananHighlights)
+                }
+
+                // Action Cards Row (Explore & List)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    ImageActionCard(
+                        text = "Explore",
+                        onClick = onNavigateToMap,
+                        imageUrl = R.drawable.explore_pic,
+                        modifier = Modifier.weight(1f)
                     )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = "Selamat Datang, User!",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
+
+                    ImageActionCard(
+                        text = "List",
+                        onClick = onNavigateToList,
+                        imageUrl = R.drawable.photos_pic,
+                        badgeText = "2 photos",
+                        modifier = Modifier.weight(1f)
                     )
                 }
-            }
 
-            // Carousel Section with title overlay
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 16.dp)
-            ) {
-                PrambananCarousel(highlights = prambananHighlights)
-            }
+                Spacer(modifier = Modifier.height(16.dp))
 
-            // Action Cards Row (Explore & List)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // Explore Card
-                // IMPORTANT: First move images from drawable/homescreen/ to drawable/
-                // Then use: R.drawable.pramb1 (no quotes, no extension)
-                ImageActionCard(
-                    text = "Explore",
-                    onClick = onNavigateToMap,
-                    imageUrl = R.drawable.explore_pic, // After moving file from homescreen folder
-                    modifier = Modifier.weight(1f)
+                // Prambanan Info Card
+                PrambananInfoCard(
+                    backgroundColor = lightBrown,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
                 )
-
-                // List Card with badge
-                ImageActionCard(
-                    text = "List",
-                    onClick = onNavigateToList,
-                    imageUrl = R.drawable.photos_pic, // After moving file from homescreen folder
-                    badgeText = "2 photos",
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Prambanan Info Card
-            PrambananInfoCard(
-                backgroundColor = lightBrown,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            )
             }
         }
     }
 }
 
-
-// --- Komponen Pembantu (Composable Reusable) ---
+// --- Komponen Pembantu (Sama seperti sebelumnya) ---
 
 @Composable
 fun PrambananCarousel(highlights: List<Place>) {
     val listState = rememberLazyListState()
-
-    // Get current visible item index
     val currentIndex = remember { derivedStateOf { listState.firstVisibleItemIndex } }
 
     // Auto-scroll effect
     LaunchedEffect(Unit) {
         while (true) {
-            delay(3000) // Hold for 3 seconds
+            delay(3000)
             val nextIndex = (listState.firstVisibleItemIndex + 1) % highlights.size
             listState.animateScrollToItem(nextIndex, 0)
         }
@@ -186,7 +182,6 @@ fun PrambananCarousel(highlights: List<Place>) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // Carousel images with pager-like behavior
             LazyRow(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
@@ -199,30 +194,22 @@ fun PrambananCarousel(highlights: List<Place>) {
                             .fillParentMaxWidth()
                             .fillMaxHeight()
                     ) {
-                        // Background image
                         Image(
                             painter = painterResource(id = place.imageUrl),
                             contentDescription = place.name,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize()
                         )
-
-                        // Gradient overlay at bottom
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .background(
                                     Brush.verticalGradient(
-                                        colors = listOf(
-                                            Color.Transparent,
-                                            Color.Black.copy(alpha = 0.7f)
-                                        ),
+                                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f)),
                                         startY = 200f
                                     )
                                 )
                         )
-
-                        // Temple name at bottom
                         Text(
                             text = place.name,
                             color = Color.White,
@@ -235,8 +222,6 @@ fun PrambananCarousel(highlights: List<Place>) {
                     }
                 }
             }
-
-            // "Slides Carousel" label at top
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -249,15 +234,10 @@ fun PrambananCarousel(highlights: List<Place>) {
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
-                        .background(
-                            Color.Black.copy(alpha = 0.4f),
-                            RoundedCornerShape(8.dp)
-                        )
+                        .background(Color.Black.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
                         .padding(horizontal = 12.dp, vertical = 4.dp)
                 )
             }
-
-            // Dot indicators
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -269,10 +249,7 @@ fun PrambananCarousel(highlights: List<Place>) {
                         modifier = Modifier
                             .size(if (index == currentIndex.value) 8.dp else 6.dp)
                             .background(
-                                color = if (index == currentIndex.value)
-                                    Color.White
-                                else
-                                    Color.White.copy(alpha = 0.5f),
+                                color = if (index == currentIndex.value) Color.White else Color.White.copy(alpha = 0.5f),
                                 shape = RoundedCornerShape(50)
                             )
                     )
@@ -286,7 +263,7 @@ fun PrambananCarousel(highlights: List<Place>) {
 fun ImageActionCard(
     text: String,
     onClick: () -> Unit,
-    imageUrl: Int, // Changed to Int for drawable resource IDs
+    imageUrl: Int,
     badgeText: String? = null,
     modifier: Modifier = Modifier
 ) {
@@ -298,22 +275,17 @@ fun ImageActionCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // Background image - using drawable resource
             Image(
                 painter = painterResource(id = imageUrl),
                 contentDescription = text,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
-
-            // Dark overlay
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.Black.copy(alpha = 0.3f))
             )
-
-            // Text centered
             Text(
                 text = text,
                 color = Color.White,
@@ -321,8 +293,6 @@ fun ImageActionCard(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.align(Alignment.Center)
             )
-
-            // Badge if provided
             badgeText?.let { badge ->
                 Box(
                     modifier = Modifier
@@ -350,8 +320,6 @@ fun PrambananInfoCard(
 ) {
     val summaries = prambananSummaries
     val listState = rememberLazyListState()
-
-    // Get current visible item index
     val currentIndex = remember { derivedStateOf { listState.firstVisibleItemIndex } }
 
     Card(
@@ -362,7 +330,6 @@ fun PrambananInfoCard(
         colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
-            // Slideable content
             LazyRow(
                 state = listState,
                 modifier = Modifier.fillMaxWidth(),
@@ -370,18 +337,14 @@ fun PrambananInfoCard(
                 flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
             ) {
                 items(summaries) { summary ->
-                    Box(
-                        modifier = Modifier.fillParentMaxWidth()
-                    ) {
+                    Box(modifier = Modifier.fillParentMaxWidth()) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Column(
-                                modifier = Modifier.weight(1f)
-                            ) {
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = summary.title,
                                     fontSize = 20.sp,
@@ -389,8 +352,6 @@ fun PrambananInfoCard(
                                     color = Color.White
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
-
-                                // Highlight info badge
                                 if (summary.highlightInfo.isNotEmpty()) {
                                     Box(
                                         modifier = Modifier
@@ -408,7 +369,6 @@ fun PrambananInfoCard(
                                         )
                                     }
                                 }
-
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
                                     text = summary.summary,
@@ -417,9 +377,6 @@ fun PrambananInfoCard(
                                     lineHeight = 16.sp
                                 )
                             }
-
-                            // Temple illustration placeholder
-                            // TODO: Replace with actual temple illustration image
                             Icon(
                                 imageVector = Icons.Default.Place,
                                 contentDescription = "Temple Icon",
@@ -432,8 +389,6 @@ fun PrambananInfoCard(
                     }
                 }
             }
-
-            // Dot indicators at the bottom
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -445,10 +400,7 @@ fun PrambananInfoCard(
                         modifier = Modifier
                             .size(if (index == currentIndex.value) 8.dp else 6.dp)
                             .background(
-                                color = if (index == currentIndex.value)
-                                    Color.White
-                                else
-                                    Color.White.copy(alpha = 0.5f),
+                                color = if (index == currentIndex.value) Color.White else Color.White.copy(alpha = 0.5f),
                                 shape = RoundedCornerShape(50)
                             )
                     )
@@ -469,7 +421,7 @@ fun HomeBottomNavBar(
         contentColor = Color.White
     ) {
         NavigationBarItem(
-            selected = true, // Home always selected on this screen
+            selected = true,
             onClick = onHomeClick,
             icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
             label = { Text("Home") },
@@ -508,28 +460,3 @@ fun HomeScreenPreview() {
         )
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-fun ImageActionCardPreview() {
-    CulturalnavigationpapbTheme {
-        ImageActionCard(
-            text = "Explore",
-            onClick = {},
-            imageUrl = R.drawable.explore_pic // Use drawable resource instead of URL
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HomeBottomNavBarPreview() {
-    CulturalnavigationpapbTheme {
-        HomeBottomNavBar(
-            onHomeClick = {},
-            onProfileClick = {},
-            backgroundColor = Color(0xFF3E2723)
-        )
-    }
-}
-//
