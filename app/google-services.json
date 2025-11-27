@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "746806072358",
+    "project_id": "culturalguideapp",
+    "storage_bucket": "culturalguideapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:746806072358:android:e0e47feaebd91b222d02e7",
+        "android_client_info": {
+          "package_name": "com.example.cultural_navigation_papb"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCcA6H3HNsXmbTFdYUOfbtiCZCe5Rm03zU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

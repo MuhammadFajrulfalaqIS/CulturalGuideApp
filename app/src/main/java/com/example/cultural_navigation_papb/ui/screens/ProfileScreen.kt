@@ -1,178 +1,236 @@
-// File: ui/screens/ProfileScreen.kt
 package com.example.cultural_navigation_papb.ui.screens
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.cultural_navigation_papb.ui.theme.CulturalnavigationpapbTheme
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
+import com.example.cultural_navigation_papb.data.viewmodels.AuthViewModel
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    // Nanti kita akan tambahkan parameter untuk ViewModel dan Navigasi
-    // onSignOut: () -> Unit,
-    // onChangePassword: () -> Unit,
-    // userEmail: String?
+    onSignOutSuccess: () -> Unit = {},
+    viewModel: AuthViewModel = viewModel()
 ) {
-    // --- Data Placeholder untuk Desain ---
-    // Nanti ini akan diganti dengan data dari Firebase ViewModel
-    val userEmail = "muhammad.fajrulfalaq@example.com"
-    // ------------------------------------
+    val user by viewModel.currentUser.collectAsState()
+    var showEditDialog by remember { mutableStateOf(false) }
+    var showPasswordDialog by remember { mutableStateOf(false) }
+
+    // Image Picker Launcher
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri: Uri? ->
+            if (uri != null) {
+                // Saat foto dipilih, langsung simpan ke database via ViewModel
+                // Nama user dikirim ulang agar tidak hilang
+                user?.name?.let { viewModel.updateProfile(it, uri) }
+            }
+        }
+    )
 
     Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Profil Saya") })
-        }
+        topBar = { TopAppBar(title = { Text("Profil Saya") }) }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // 1. Avatar Pengguna
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = "Avatar Profil",
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape),
-                tint = MaterialTheme.colorScheme.primary
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // 2. Info Card Email (Sesuai permintaan Anda)
-            InfoCard(
-                icon = Icons.Default.Email,
-                label = "Email Pengguna",
-                value = userEmail // Ini akan diambil dari Firebase Auth
-            )
-
-            // 3. Tombol Aksi
-            Spacer(modifier = Modifier.weight(1f)) // Mendorong tombol ke bawah
-
-            // Tombol Ubah Password (Sesuai permintaan Anda)
-            OutlinedButton(
-                onClick = { /* TODO: Navigasi ke layar ubah password */ },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
-                Text("Ubah Password")
+        if (user == null) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator() // Loading state
             }
-
-            // Tombol Log Out
-            Button(
-                onClick = { /* TODO: Panggil fungsi signOut dari ViewModel */ },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error
-                )
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Icon(Icons.Default.ExitToApp, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
-                Text("Log Out")
+                // 1. Avatar Pengguna dengan Tombol Edit
+                Box(contentAlignment = Alignment.BottomEnd) {
+                    val imagePainter = if (user?.profileImagePath != null) {
+                        rememberAsyncImagePainter(
+                            ImageRequest.Builder(LocalContext.current)
+                                .data(File(user!!.profileImagePath!!))
+                                .build()
+                        )
+                    } else {
+                        rememberAsyncImagePainter(
+                            ImageRequest.Builder(LocalContext.current)
+                                .data("https://ui-avatars.com/api/?name=${user?.name}&background=random")
+                                .build()
+                        )
+                    }
+
+                    Image(
+                        painter = imagePainter,
+                        contentDescription = "Avatar Profil",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
+                            .clickable {
+                                // Buka galeri saat foto diklik
+                                photoPickerLauncher.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                )
+                            }
+                    )
+
+                    // Icon Edit Kecil di pojok foto
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Ubah Foto",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary)
+                            .padding(6.dp)
+                            .size(16.dp)
+                    )
+                }
+
+                Text(
+                    text = user?.name ?: "Nama Pengguna",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // 2. Info Cards
+                InfoCard(Icons.Default.Email, "Email", user?.email ?: "")
+                // Tampilkan path/lokasi foto tersimpan (opsional, untuk debug)
+                // InfoCard(Icons.Default.Image, "Lokasi Foto", user?.profileImagePath ?: "Belum ada foto")
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // 3. Tombol Aksi
+                OutlinedButton(
+                    onClick = { showEditDialog = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.Edit, null, modifier = Modifier.padding(end = 8.dp))
+                    Text("Edit Profil (Nama)")
+                }
+
+                OutlinedButton(
+                    onClick = { showPasswordDialog = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.Lock, null, modifier = Modifier.padding(end = 8.dp))
+                    Text("Ubah Password")
+                }
+
+                Button(
+                    onClick = { viewModel.signOut { onSignOutSuccess() } },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Icon(Icons.Default.ExitToApp, null, modifier = Modifier.padding(end = 8.dp))
+                    Text("Log Out")
+                }
             }
         }
     }
+
+    // --- Dialog Edit Nama ---
+    if (showEditDialog) {
+        var newName by remember { mutableStateOf(user?.name ?: "") }
+        AlertDialog(
+            onDismissRequest = { showEditDialog = false },
+            title = { Text("Edit Profil") },
+            text = {
+                OutlinedTextField(
+                    value = newName,
+                    onValueChange = { newName = it },
+                    label = { Text("Nama Lengkap") }
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    viewModel.updateProfile(newName, null) // Update nama saja, foto null
+                    showEditDialog = false
+                }) { Text("Simpan") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEditDialog = false }) { Text("Batal") }
+            }
+        )
+    }
+
+    // --- Dialog Ubah Password ---
+    if (showPasswordDialog) {
+        var newPass by remember { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = { showPasswordDialog = false },
+            title = { Text("Ubah Password") },
+            text = {
+                Column {
+                    Text("Masukkan password baru Anda.")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = newPass,
+                        onValueChange = { newPass = it },
+                        label = { Text("Password Baru") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    if (newPass.isNotEmpty()) {
+                        viewModel.updatePassword(newPass) { showPasswordDialog = false }
+                    }
+                }) { Text("Ubah") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPasswordDialog = false }) { Text("Batal") }
+            }
+        )
+    }
 }
 
-/**
- * Composable kustom untuk menampilkan sebaris info
- */
 @Composable
-private fun InfoCard(
-    icon: ImageVector,
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier
-) {
+private fun InfoCard(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, value: String) {
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
+            Icon(imageVector = icon, contentDescription = label, tint = MaterialTheme.colorScheme.primary)
             Column(modifier = Modifier.padding(start = 16.dp)) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = value,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Text(text = label, style = MaterialTheme.typography.bodySmall)
+                Text(text = value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
             }
         }
-    }
-}
-
-
-// ------------------------------------
-// --- PREVIEW UNTUK DESAIN ---
-// ------------------------------------
-
-@Preview(showBackground = true, widthDp = 360, heightDp = 640)
-@Composable
-fun ProfileScreenPreview() {
-    CulturalnavigationpapbTheme {
-        ProfileScreen()
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun InfoCardPreview() {
-    CulturalnavigationpapbTheme {
-        InfoCard(
-            icon = Icons.Default.Email,
-            label = "Email",
-            value = "email.anda@example.com",
-            modifier = Modifier.padding(16.dp)
-        )
     }
 }
