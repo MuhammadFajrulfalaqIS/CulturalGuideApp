@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -49,7 +50,12 @@ fun SignUpScreen(
             value = name, onValueChange = { name = it },
             label = { Text("Nama Lengkap") },
             leadingIcon = { Icon(Icons.Default.Person, null) },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFF4A3428), // Dark brown
+                focusedLabelColor = Color(0xFF4A3428), // Dark brown
+                cursorColor = Color(0xFF4A3428) // Dark brown
+            )
         )
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -58,7 +64,12 @@ fun SignUpScreen(
             label = { Text("Email") },
             leadingIcon = { Icon(Icons.Default.Email, null) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFF4A3428), // Dark brown
+                focusedLabelColor = Color(0xFF4A3428), // Dark brown
+                cursorColor = Color(0xFF4A3428) // Dark brown
+            )
         )
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -73,7 +84,12 @@ fun SignUpScreen(
                     Icon(if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff, null)
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFF4A3428), // Dark brown
+                focusedLabelColor = Color(0xFF4A3428), // Dark brown
+                cursorColor = Color(0xFF4A3428) // Dark brown
+            )
         )
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -83,7 +99,13 @@ fun SignUpScreen(
             leadingIcon = { Icon(Icons.Default.Lock, null) },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth(),
-            isError = password != confirmPassword
+            isError = password != confirmPassword,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFF4A3428), // Dark brown
+                focusedLabelColor = Color(0xFF4A3428), // Dark brown
+                cursorColor = Color(0xFF4A3428), // Dark brown
+                errorBorderColor = MaterialTheme.colorScheme.error
+            )
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -97,13 +119,25 @@ fun SignUpScreen(
                 }
             },
             enabled = !isLoading && email.isNotEmpty() && password.isNotEmpty() && name.isNotEmpty(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF4A3428), // Dark brown
+                contentColor = Color.White
+            )
         ) {
-            if (isLoading) CircularProgressIndicator(modifier = Modifier.size(24.dp))
+            if (isLoading) CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+                color = Color.White
+            )
             else Text("Sign Up")
         }
 
-        TextButton(onClick = onNavigateToSignIn) {
+        TextButton(
+            onClick = onNavigateToSignIn,
+            colors = ButtonDefaults.textButtonColors(
+                contentColor = Color(0xFF4A3428) // Dark brown
+            )
+        ) {
             Text("Sudah punya akun? Sign In")
         }
     }

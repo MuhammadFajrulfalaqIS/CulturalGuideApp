@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -47,7 +48,12 @@ fun SignInScreen(
             label = { Text("Email") },
             leadingIcon = { Icon(Icons.Default.Email, null) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFF4A3428), // Dark brown
+                focusedLabelColor = Color(0xFF4A3428), // Dark brown
+                cursorColor = Color(0xFF4A3428) // Dark brown
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -63,7 +69,12 @@ fun SignInScreen(
                     Icon(if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff, null)
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFF4A3428), // Dark brown
+                focusedLabelColor = Color(0xFF4A3428), // Dark brown
+                cursorColor = Color(0xFF4A3428) // Dark brown
+            )
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -75,15 +86,27 @@ fun SignInScreen(
                 }
             },
             enabled = !isLoading && email.isNotEmpty() && password.isNotEmpty(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF4A3428), // Dark brown
+                contentColor = Color.White
+            )
         ) {
-            if (isLoading) CircularProgressIndicator(modifier = Modifier.size(24.dp))
+            if (isLoading) CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+                color = Color.White
+            )
             else Text("Sign In")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextButton(onClick = onNavigateToSignUp) {
+        TextButton(
+            onClick = onNavigateToSignUp,
+            colors = ButtonDefaults.textButtonColors(
+                contentColor = Color(0xFF4A3428) // Dark brown
+            )
+        ) {
             Text("Belum punya akun? Sign Up")
         }
     }

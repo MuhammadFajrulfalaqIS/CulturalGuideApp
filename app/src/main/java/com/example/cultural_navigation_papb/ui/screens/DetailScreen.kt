@@ -74,8 +74,8 @@ fun DetailScreen(
                             )
                         }
                     },
-                    // Ubah warna: Hijau jika tersimpan, Primary jika belum
-                    containerColor = if (isDownloaded) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary,
+                    // Ubah warna: Hijau jika tersimpan, Dark brown jika belum
+                    containerColor = if (isDownloaded) Color(0xFF4CAF50) else Color(0xFF4A3428),
                     contentColor = Color.White
                 ) {
                     // Ubah ikon: Ceklis jika tersimpan, Panah bawah jika belum
@@ -123,7 +123,11 @@ fun DetailScreen(
                     // Category Chip
                     SuggestionChip(
                         onClick = { },
-                        label = { Text("Wisata Sejarah") }
+                        label = { Text("Wisata Sejarah") },
+                        colors = SuggestionChipDefaults.suggestionChipColors(
+                            containerColor = Color(0xFFC9A882), // Light brown
+                            labelColor = Color(0xFF4A3428) // Dark brown text
+                        )
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))

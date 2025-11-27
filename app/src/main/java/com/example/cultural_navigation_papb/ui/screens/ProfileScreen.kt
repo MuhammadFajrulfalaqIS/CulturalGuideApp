@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -109,10 +110,10 @@ fun ProfileScreen(
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Ubah Foto",
-                        tint = MaterialTheme.colorScheme.onPrimary,
+                        tint = Color.White,
                         modifier = Modifier
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary)
+                            .background(Color(0xFF4A3428)) // Dark brown
                             .padding(6.dp)
                             .size(16.dp)
                     )
@@ -134,18 +135,26 @@ fun ProfileScreen(
                 // --- 3. Tombol Aksi ---
 
                 // Edit Profil
-                OutlinedButton(
+                Button(
                     onClick = { showEditDialog = true },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF4A3428), // Dark brown
+                        contentColor = Color.White
+                    )
                 ) {
                     Icon(Icons.Default.Edit, null, modifier = Modifier.padding(end = 8.dp))
                     Text("Edit Nama")
                 }
 
                 // Ubah Password
-                OutlinedButton(
+                Button(
                     onClick = { showPasswordDialog = true },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF4A3428), // Dark brown
+                        contentColor = Color.White
+                    )
                 ) {
                     Icon(Icons.Default.Lock, null, modifier = Modifier.padding(end = 8.dp))
                     Text("Ubah Password")
@@ -156,7 +165,8 @@ fun ProfileScreen(
                     onClick = onNavigateToInbox,
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary
+                        containerColor = Color(0xFFC9A882), // Light brown
+                        contentColor = Color(0xFF4A3428) // Dark brown text
                     )
                 ) {
                     Icon(Icons.Default.Inbox, null, modifier = Modifier.padding(end = 8.dp))
@@ -193,10 +203,16 @@ fun ProfileScreen(
                 )
             },
             confirmButton = {
-                Button(onClick = {
-                    viewModel.updateProfile(newName, null)
-                    showEditDialog = false
-                }) { Text("Simpan") }
+                Button(
+                    onClick = {
+                        viewModel.updateProfile(newName, null)
+                        showEditDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF4A3428), // Dark brown
+                        contentColor = Color.White
+                    )
+                ) { Text("Simpan") }
             },
             dismissButton = {
                 TextButton(onClick = { showEditDialog = false }) { Text("Batal") }
@@ -221,11 +237,17 @@ fun ProfileScreen(
                 )
             },
             confirmButton = {
-                Button(onClick = {
-                    if (newPass.isNotEmpty()) {
-                        viewModel.updatePassword(newPass) { showPasswordDialog = false }
-                    }
-                }) { Text("Ubah") }
+                Button(
+                    onClick = {
+                        if (newPass.isNotEmpty()) {
+                            viewModel.updatePassword(newPass) { showPasswordDialog = false }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF4A3428), // Dark brown
+                        contentColor = Color.White
+                    )
+                ) { Text("Ubah") }
             },
             dismissButton = {
                 TextButton(onClick = { showPasswordDialog = false }) { Text("Batal") }
@@ -244,7 +266,7 @@ private fun InfoCard(icon: ImageVector, label: String, value: String) {
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(imageVector = icon, contentDescription = label, tint = MaterialTheme.colorScheme.primary)
+            Icon(imageVector = icon, contentDescription = label, tint = Color(0xFF4A3428)) // Dark brown
             Column(modifier = Modifier.padding(start = 16.dp)) {
                 Text(text = label, style = MaterialTheme.typography.bodySmall)
                 Text(text = value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
