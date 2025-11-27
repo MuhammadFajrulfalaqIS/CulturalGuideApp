@@ -103,26 +103,39 @@ object PrambananData {
         ),
 
         Place(
-            id = "candi_kelir",
-            name = "Candi Kelir",
-            description = "Candi-candi kecil penjaga gerbang yang tersebar di sekitar kompleks utama.",
+            id = "candi_kelir_utara",
+            name = "Candi Kelir Utara",
+            description = "Candi pagar di sisi utara kompleks, berfungsi sebagai gerbang spiritual.",
             imageUrl = com.example.cultural_navigation_papb.R.drawable.arcabrahma,
-            latitude = -7.7530,
-            longitude = 110.4900,
+            latitude = -7.750987,
+            longitude = 110.493012,
             category = "candi_perwara",
             isAvailable = true,
             rating = 4.2f,
             reviewCount = 650
         ),
 
-        // KOMPLEK SECU (DI SELATAN KOMPLEK UTAMA)
+        Place(
+            id = "candi_kelir_selatan",
+            name = "Candi Kelir Selatan",
+            description = "Candi pagar di sisi selatan kompleks, menandai batas area sakral.",
+            imageUrl = com.example.cultural_navigation_papb.R.drawable.arcawisnu,
+            latitude = -7.753269,
+            longitude = 110.490548,
+            category = "candi_perwara",
+            isAvailable = true,
+            rating = 4.2f,
+            reviewCount = 590
+        ),
+
+        // KOMPLEK SEWU (DI SELATAN KOMPLEK UTAMA)
         Place(
             id = "candi_sewu",
             name = "Candi Sewu",
             description = "Kompleks candi Buddha terbesar kedua setelah Borobudur, terletak sekitar 800 meter selatan Candi Prambanan. Nama aslinya adalah Manjusrigrha.",
             imageUrl = com.example.cultural_navigation_papb.R.drawable.arcasiwa,
-            latitude = -7.7600,
-            longitude = 110.4920,
+            latitude = -7.746890,
+            longitude = 110.492123,
             category = "candi_buddha",
             isAvailable = true,
             rating = 4.7f,
@@ -147,15 +160,15 @@ object PrambananData {
             name = "Candi Bubrah",
             description = "Sisa-sisa reruntuhan candi Buddha di dekat Candi Sewu yang telah dipugar sebagian.",
             imageUrl = com.example.cultural_navigation_papb.R.drawable.arcabrahma,
-            latitude = -7.7590,
-            longitude = 110.4910,
+            latitude = -7.756234,
+            longitude = 110.490876,
             category = "candi_buddha",
             isAvailable = true,
             rating = 4.3f,
             reviewCount = 560
         ),
 
-        // KOMPLEK PLAGASARI (DI TIMUR)
+        // KOMPLEK PLAOSAN (DI TIMUR)
         Place(
             id = "candi_plaosan_lor",
             name = "Candi Plaosan Lor",
@@ -182,7 +195,7 @@ object PrambananData {
             reviewCount = 1120
         ),
 
-        // TEMPAT LAIN DI KOMPLEKS PRAMBANAN
+        // MUSEUM DAN FASILITAS REKREASI
         Place(
             id = "museum_candi_prambanan",
             name = "Museum Candi Prambanan",
@@ -194,6 +207,32 @@ object PrambananData {
             isAvailable = true,
             rating = 4.6f,
             reviewCount = 1320
+        ),
+
+        Place(
+            id = "museum_taman_wisnu",
+            name = "Museum Taman Wisnu",
+            description = "Museum arkeologi dengan koleksi artefak Prambanan dan pameran sejarah Hindu di Jawa.",
+            imageUrl = com.example.cultural_navigation_papb.R.drawable.photos_pic,
+            latitude = -7.750587,
+            longitude = 110.493589,
+            category = "museum",
+            isAvailable = true,
+            rating = 4.6f,
+            reviewCount = 1420
+        ),
+
+        Place(
+            id = "taman_wisnu",
+            name = "Taman Wisnu",
+            description = "Taman hijau dengan pemandangan istimewa ke arah kompleks Prambanan, cocok untuk bersantai.",
+            imageUrl = com.example.cultural_navigation_papb.R.drawable.explore_pic,
+            latitude = -7.750723,
+            longitude = 110.493421,
+            category = "taman",
+            isAvailable = true,
+            rating = 4.5f,
+            reviewCount = 890
         ),
 
         Place(
@@ -209,6 +248,33 @@ object PrambananData {
             reviewCount = 1870
         ),
 
+        // FASILITAS PENGUNJUNG
+        Place(
+            id = "area_parkir_utama",
+            name = "Area Parkir Utama",
+            description = "Area parkir luas untuk kendaraan pengunjung dengan akses mudah ke pintu masuk utama.",
+            imageUrl = com.example.cultural_navigation_papb.R.drawable.prambanan_shadow,
+            latitude = -7.753789,
+            longitude = 110.492145,
+            category = "fasilitas",
+            isAvailable = true,
+            rating = 4.1f,
+            reviewCount = 430
+        ),
+
+        Place(
+            id = "pusat_informasi_pengunjung",
+            name = "Pusat Informasi Pengunjung",
+            description = "Pusat informasi dan pembelian tiket dengan staff yang siap membantu pengunjung.",
+            imageUrl = com.example.cultural_navigation_papb.R.drawable.photos_pic,
+            latitude = -7.753456,
+            longitude = 110.491987,
+            category = "fasilitas",
+            isAvailable = true,
+            rating = 4.3f,
+            reviewCount = 670
+        ),
+
         Place(
             id = "sendang_putri",
             name = "Sendang Putri",
@@ -220,6 +286,20 @@ object PrambananData {
             isAvailable = true,
             rating = 4.3f,
             reviewCount = 740
+        ),
+
+        // KULINER
+        Place(
+            id = "warung_budaya",
+            name = "Warung Budaya",
+            description = "Area kuliner tradisional dengan berbagai makanan khas Yogyakarta dan toko suvenir.",
+            imageUrl = com.example.cultural_navigation_papb.R.drawable.explore_pic,
+            latitude = -7.752345,
+            longitude = 110.492876,
+            category = "kuliner",
+            isAvailable = true,
+            rating = 4.4f,
+            reviewCount = 1120
         ),
 
         Place(
