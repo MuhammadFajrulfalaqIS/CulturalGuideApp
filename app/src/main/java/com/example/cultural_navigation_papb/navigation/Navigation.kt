@@ -9,10 +9,11 @@ import androidx.navigation.navArgument
 import com.example.cultural_navigation_papb.ui.screens.*
 
 object Destinations {
-    // Tambahkan rute baru untuk autentikasi
+    // Tambah rute baru
+    const val ONBOARDING = "onboarding"
+
     const val SIGN_IN = "sign_in"
     const val SIGN_UP = "sign_up"
-
     const val HOME = "home"
     const val MAP = "map"
     const val LIST = "list"
@@ -26,16 +27,25 @@ fun CultureGuideNavHost() {
 
     NavHost(
         navController = navController,
-        // UBAH startDestination menjadi SIGN_IN
-        startDestination = Destinations.SIGN_IN
+        // UBAH startDestination menjadi ONBOARDING
+        startDestination = Destinations.ONBOARDING
     ) {
-        // --- 1. Halaman Sign In (Awal) ---
+        // --- 0. Onboarding Screen ---
+        composable(Destinations.ONBOARDING) {
+            OnboardingScreen(
+                onFinishOnboarding = {
+                    // Pindah ke Sign In dan hapus Onboarding dari riwayat (biar ga bisa di-back)
+                    navController.navigate(Destinations.SIGN_IN) {
+                        popUpTo(Destinations.ONBOARDING) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        // --- 1. Sign In Screen ---
         composable(Destinations.SIGN_IN) {
             SignInScreen(
                 onSignInSuccess = {
-                    // Jika login berhasil, pindah ke Home
-                    // popUpTo(Destinations.SIGN_IN) { inclusive = true }
-                    // artinya: Hapus halaman login dari riwayat back stack
                     navController.navigate(Destinations.HOME) {
                         popUpTo(Destinations.SIGN_IN) { inclusive = true }
                     }
@@ -46,17 +56,16 @@ fun CultureGuideNavHost() {
             )
         }
 
-        // --- 2. Halaman Sign Up ---
+        // --- 2. Sign Up Screen ---
         composable(Destinations.SIGN_UP) {
             SignUpScreen(
                 onNavigateToSignIn = {
-                    // Kembali ke login (pop screen sign up)
                     navController.popBackStack()
                 }
             )
         }
 
-        // --- 3. Halaman Home ---
+        // --- 3. Home Screen ---
         composable(Destinations.HOME) {
             HomeScreen(
                 onNavigateToMap = { navController.navigate(Destinations.MAP) },
@@ -65,11 +74,10 @@ fun CultureGuideNavHost() {
             )
         }
 
-        // --- 4. Halaman Profile ---
+        // --- Halaman Lainnya ---
         composable(Destinations.PROFILE) {
             ProfileScreen(
                 onSignOutSuccess = {
-                    // Jika logout, kembali ke Sign In dan hapus semua riwayat
                     navController.navigate(Destinations.SIGN_IN) {
                         popUpTo(0) { inclusive = true }
                     }
@@ -77,7 +85,6 @@ fun CultureGuideNavHost() {
             )
         }
 
-        // --- Halaman Lainnya (Map, List, Detail) ---
         composable(Destinations.MAP) {
             MapScreen(
                 onNavigateToDetail = { placeId -> navController.navigate("detail/$placeId") }
