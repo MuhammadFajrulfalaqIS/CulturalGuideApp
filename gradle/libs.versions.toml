@@ -48,6 +48,7 @@ hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-com
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 
 # Database (Room)
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
@@ -79,7 +80,7 @@ hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 googleServices = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 
 [bundles]
-networking = [ "retrofit", "retrofit-converter-gson", "okhttp" ]
+networking = [ "retrofit", "retrofit-converter-gson", "okhttp", "okhttp-logging-interceptor" ]
 room = [ "room-runtime", "room-ktx" ]
 maps = [ "maps-compose", "maps-v3", "location" ]
 lifecycle = [ "lifecycle-runtime-compose", "lifecycle-viewmodel-compose" ]

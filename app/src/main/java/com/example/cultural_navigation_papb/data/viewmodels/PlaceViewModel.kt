@@ -2,7 +2,7 @@ package com.example.cultural_navigation_papb.data.viewmodels
 
 import androidx.lifecycle.ViewModel
 import com.example.cultural_navigation_papb.data.models.Place
-import com.example.cultural_navigation_papb.data.models.allPrambananPlaces
+import com.example.cultural_navigation_papb.data.PrambananData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,8 +16,8 @@ import javax.inject.Inject
 @HiltViewModel
 class PlaceViewModel @Inject constructor() : ViewModel() {
 
-    // State untuk menyimpan list places
-    private val _places = MutableStateFlow<List<Place>>(allPrambananPlaces)
+    // State untuk menyimpan list places - FIXED: Use PrambananData instead
+    private val _places = MutableStateFlow<List<Place>>(PrambananData.allTemples)
     val places: StateFlow<List<Place>> = _places.asStateFlow()
 
     // State untuk loading

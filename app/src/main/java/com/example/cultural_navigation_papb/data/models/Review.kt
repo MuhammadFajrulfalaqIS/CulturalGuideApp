@@ -3,6 +3,7 @@ package com.example.cultural_navigation_papb.data.models
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.ForeignKey
+import androidx.room.Index
 
 /**
  * Entity untuk review/tempat wisata
@@ -17,6 +18,9 @@ import androidx.room.ForeignKey
             childColumns = ["placeId"],
             onDelete = ForeignKey.CASCADE
         )
+    ],
+    indices = [
+        Index(value = ["placeId", "userId"])
     ]
 )
 data class Review(
@@ -25,8 +29,10 @@ data class Review(
     val placeId: String,
     val userId: String,
     val userName: String,
+    val userPhoto: String = "", // User profile photo URL
     val rating: Float, // 1.0 - 5.0
     val comment: String,
+    val photos: List<String> = emptyList(), // Firebase Storage URLs
     val timestamp: Long = System.currentTimeMillis(),
     val helpfulCount: Int = 0
 )

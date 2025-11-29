@@ -30,8 +30,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.cultural_navigation_papb.R
 import com.example.cultural_navigation_papb.data.models.Place
-import com.example.cultural_navigation_papb.data.models.prambananHighlights
-import com.example.cultural_navigation_papb.data.models.prambananSummaries
+import com.example.cultural_navigation_papb.data.PrambananData
+import com.example.cultural_navigation_papb.data.prambananSummaries
 import com.example.cultural_navigation_papb.data.viewmodels.AuthViewModel
 import com.example.cultural_navigation_papb.ui.theme.CulturalnavigationpapbTheme
 import kotlinx.coroutines.delay
@@ -112,13 +112,13 @@ fun HomeScreen(
                     }
                 }
 
-                // Carousel Section
+                // Carousel Section - UPDATED: Use first 3 items from PrambananData
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 16.dp)
                 ) {
-                    PrambananCarousel(highlights = prambananHighlights)
+                    PrambananCarousel(highlights = PrambananData.allTemples.take(3))
                 }
 
                 // Action Cards Row (Explore & List)

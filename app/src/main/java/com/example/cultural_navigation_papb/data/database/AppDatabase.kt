@@ -14,14 +14,16 @@ import com.example.cultural_navigation_papb.data.models.User
 import com.example.cultural_navigation_papb.data.dao.UserDao
 import com.example.cultural_navigation_papb.data.models.SavedPlace
 import com.example.cultural_navigation_papb.data.dao.SavedPlaceDao
+import com.example.cultural_navigation_papb.data.models.VisitedPlace
+import com.example.cultural_navigation_papb.data.dao.VisitedPlaceDao
 
 /**
  * Room Database untuk aplikasi Cultural Navigation
  * Menyimpan data tempat wisata dan review
  */
 @Database(
-    entities = [Place::class, Review::class, User::class, SavedPlace::class],
-    version = 4, // Update version karena ada entity baru
+    entities = [Place::class, Review::class, User::class, SavedPlace::class, VisitedPlace::class],
+    version = 6, // Update version untuk fix schema mismatch
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -31,6 +33,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun reviewDao(): ReviewDao
     abstract fun userDao(): UserDao
     abstract fun savedPlaceDao(): SavedPlaceDao
+    abstract fun visitedPlaceDao(): VisitedPlaceDao
 
     companion object {
         @Volatile
@@ -43,7 +46,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "cultural_navigation_database"
                 )
-                    .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigration(dropAllTables = true)
                     .build()
                 INSTANCE = instance
                 instance
@@ -51,4 +54,3 @@ abstract class AppDatabase : RoomDatabase() {
         }
     }
 }
-

@@ -21,26 +21,91 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.example.cultural_navigation_papb.data.viewmodels.InboxViewModel
 import com.example.cultural_navigation_papb.data.viewmodels.PlaceViewModel
+import com.example.cultural_navigation_papb.data.viewmodels.ReviewViewModel
 import com.example.cultural_navigation_papb.ui.theme.CulturalnavigationpapbTheme
+import com.example.cultural_navigation_papb.ui.components.ReviewSection
+import com.example.cultural_navigation_papb.ui.components.ImprovedReviewDialog
+
+// Helper Composable for Section Titles
+@Composable
+fun SectionTitle(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Bold,
+        color = Color(0xFF4A3428) // Dark brown
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
     placeId: String,
     onNavigateBack: () -> Unit,
+    userId: String = "current_user_id", // TODO: Get from Auth
+    userName: String = "User Name", // TODO: Get from Auth
     // ViewModel untuk mengambil data tempat (Data Asli)
     viewModel: PlaceViewModel = hiltViewModel(),
     // ViewModel untuk fitur download offline (Database Lokal)
-    inboxViewModel: InboxViewModel = viewModel()
+    inboxViewModel: InboxViewModel = viewModel(),
+    // ViewModel untuk review system
+    reviewViewModel: ReviewViewModel = hiltViewModel()
 ) {
-    // 1. Ambil data place berdasarkan ID
-    val place = remember(placeId) { viewModel.getPlaceById(placeId) }
+    // 1. Ambil data place berdasarkan ID dengan fallback ke default place
+    val place by remember(placeId) {
+        derivedStateOf {
+            viewModel.getPlaceById(placeId)
+        }
+    }
+
+    // Debug logging untuk melihat apakah placeId diterima dengan benar
+    android.util.Log.d("DetailScreen", "Received placeId: $placeId")
+    android.util.Log.d("DetailScreen", "Found place: ${place?.name}")
+
+    // Loading state dengan timeout
+    var isLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(place) {
+        val currentPlace = place
+        if (currentPlace != null) {
+            isLoading = false
+        } else {
+            // Timeout setelah 3 detik untuk fallback ke default data
+            kotlinx.coroutines.delay(3000)
+            if (place == null) {
+                isLoading = false
+            }
+        }
+    }
 
     // 2. Cek apakah tempat ini sudah didownload sebelumnya
     // 'collectAsState' akan memantau perubahan database secara real-time
     val isDownloaded by inboxViewModel.isDownloaded(placeId).collectAsState(initial = false)
+
+    // 3. Load reviews untuk tempat ini
+    LaunchedEffect(placeId) {
+        reviewViewModel.loadReviewsForPlace(placeId)
+    }
+
+    // 4. Review state management
+    val reviews by reviewViewModel.reviews.collectAsState()
+    val averageRating by remember(reviews) { derivedStateOf { reviewViewModel.getAverageRating() } }
+    val ratingDistribution by remember(reviews) { derivedStateOf { reviewViewModel.getRatingDistribution() } }
+    val isSubmitting by reviewViewModel.isSubmitting.collectAsState()
+    val submitError by reviewViewModel.submitError.collectAsState()
+
+    // 5. Dialog state for adding review
+    var showAddReviewDialog by remember { mutableStateOf(false) }
+
+    // 6. Show success/error messages
+    LaunchedEffect(isSubmitting) {
+        if (!isSubmitting && submitError == null) {
+            reviewViewModel.resetForm()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -58,19 +123,20 @@ fun DetailScreen(
         },
         // 3. Tambahkan Tombol Aksi (FAB) untuk Download
         floatingActionButton = {
-            if (place != null) {
+            val fabPlace = place
+            if (fabPlace != null) {
                 FloatingActionButton(
                     onClick = {
                         if (isDownloaded) {
                             // Jika sudah ada, hapus dari inbox
-                            inboxViewModel.removePlace(place.id)
+                            inboxViewModel.removePlace(fabPlace.id)
                         } else {
                             // Jika belum, simpan ke inbox
                             inboxViewModel.downloadPlace(
-                                id = place.id,
-                                name = place.name,
-                                desc = place.detailedDescription, // Simpan deskripsi lengkap
-                                imageResId = place.imageUrl // Simpan ID gambar
+                                id = fabPlace.id,
+                                name = fabPlace.name,
+                                desc = fabPlace.detailedDescription, // Simpan deskripsi lengkap
+                                imageResId = fabPlace.imageUrl // Simpan ID gambar
                             )
                         }
                     },
@@ -87,7 +153,31 @@ fun DetailScreen(
             }
         }
     ) { paddingValues ->
-        if (place != null) {
+        if (isLoading) {
+            // Loading or error state
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator(
+                        color = Color(0xFF4A3428)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Memuat data destinasi...",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color(0xFF4A3428)
+                    )
+                }
+            }
+        } else {
+            val currentPlace = place
+            if (currentPlace != null) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -100,9 +190,9 @@ fun DetailScreen(
                         .fillMaxWidth()
                         .height(280.dp)
                 ) {
-                    Image(
-                        painter = painterResource(id = place.imageUrl),
-                        contentDescription = place.name,
+                    AsyncImage(
+                        model = currentPlace.imageUrl,
+                        contentDescription = currentPlace.name,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
@@ -112,7 +202,7 @@ fun DetailScreen(
                 Column(modifier = Modifier.padding(16.dp)) {
                     // Title
                     Text(
-                        text = place.name,
+                        text = currentPlace.name,
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF4A3428) // Dark brown
@@ -136,19 +226,19 @@ fun DetailScreen(
                     SectionTitle("Tentang")
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = place.detailedDescription,
+                        text = currentPlace.detailedDescription,
                         style = MaterialTheme.typography.bodyLarge,
                         lineHeight = 24.sp,
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
                     // Historical Information Section
-                    if (place.historicalInfo.isNotEmpty()) {
+                    if (currentPlace.historicalInfo.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(24.dp))
                         SectionTitle("Sejarah")
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = place.historicalInfo,
+                            text = currentPlace.historicalInfo,
                             style = MaterialTheme.typography.bodyLarge,
                             lineHeight = 24.sp,
                             color = MaterialTheme.colorScheme.onSurface
@@ -156,12 +246,12 @@ fun DetailScreen(
                     }
 
                     // Architecture Section
-                    if (place.architectureInfo.isNotEmpty()) {
+                    if (currentPlace.architectureInfo.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(24.dp))
                         SectionTitle("Arsitektur")
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = place.architectureInfo,
+                            text = currentPlace.architectureInfo,
                             style = MaterialTheme.typography.bodyLarge,
                             lineHeight = 24.sp,
                             color = MaterialTheme.colorScheme.onSurface
@@ -169,7 +259,7 @@ fun DetailScreen(
                     }
 
                     // Visiting Information Section
-                    if (place.visitingInfo.isNotEmpty()) {
+                    if (currentPlace.visitingInfo.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(24.dp))
                         Card(
                             modifier = Modifier.fillMaxWidth(),
@@ -181,7 +271,7 @@ fun DetailScreen(
                                 SectionTitle("Informasi Kunjungan")
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = place.visitingInfo,
+                                    text = currentPlace.visitingInfo,
                                     style = MaterialTheme.typography.bodyMedium,
                                     lineHeight = 22.sp,
                                     color = Color(0xFF4A3428) // Dark brown text
@@ -190,46 +280,32 @@ fun DetailScreen(
                         }
                     }
 
+                    // Reviews Section
+                    ReviewSection(
+                        reviews = reviews,
+                        averageRating = averageRating,
+                        ratingDistribution = ratingDistribution,
+                        onAddReview = { showAddReviewDialog = true },
+                        onHelpfulClick = { reviewId ->
+                            reviewViewModel.markReviewHelpful(reviewId)
+                        }
+                    )
+
                     // Tambahan Spacer di bawah agar konten tidak tertutup FAB
                     Spacer(modifier = Modifier.height(80.dp))
                 }
             }
-        } else {
-            // Error State - Place not found
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "Data lokasi tidak ditemukan",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Button(onClick = onNavigateBack) {
-                        Text("Kembali")
-                    }
-                }
-            }
         }
     }
-}
 
-// Helper Composable for Section Titles
-@Composable
-private fun SectionTitle(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleLarge,
-        fontWeight = FontWeight.Bold,
-        color = Color(0xFF4A3428) // Dark brown
-    )
+    // Add Review Dialog
+    val dialogPlace = place
+    if (showAddReviewDialog && dialogPlace != null) {
+        ImprovedReviewDialog(
+            place = dialogPlace,
+            onDismiss = { showAddReviewDialog = false }
+        )
+    }
 }
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)
@@ -241,4 +317,5 @@ fun DetailScreenPreview() {
             onNavigateBack = {}
         )
     }
+}
 }
