@@ -34,6 +34,7 @@ interface PlaceDao {
     /**
      * Mengambil tempat terdekat dari lokasi user
      */
+    @RewriteQueriesToDropUnusedColumns
     @Query("""
         SELECT *,
         ((latitude - :userLat) * (latitude - :userLat) +
@@ -94,4 +95,3 @@ interface PlaceDao {
     @Query("DELETE FROM places")
     suspend fun deleteAllPlaces()
 }
-

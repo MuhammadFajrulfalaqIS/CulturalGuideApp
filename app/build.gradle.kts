@@ -2,13 +2,13 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    // Tambahkan Hilt dan KSP
-//    kotlin("kapt") // Required for Kotlin and KAPT
     id("com.google.dagger.hilt.android")
-    id("com.google.devtools.ksp") // KSP untuk annotation processing (Hilt & Room)
-//    id("com.google.gms.google-services")
+    id("com.google.devtools.ksp")
     id("com.google.gms.google-services")
 }
+
+import java.util.Properties
+import java.io.FileInputStream
 
 android {
     namespace = "com.example.cultural_navigation_papb"
@@ -22,6 +22,17 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Load API keys from local.properties
+        val localProperties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localProperties.load(FileInputStream(localPropertiesFile))
+        }
+
+        // BuildConfig fields for API keys
+        buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"${localProperties.getProperty("GOOGLE_MAPS_API_KEY")}\"")
+        buildConfigField("String", "GOOGLE_DIRECTIONS_API_KEY", "\"${localProperties.getProperty("GOOGLE_DIRECTIONS_API_KEY")}\"")
     }
 
     buildTypes {
@@ -31,17 +42,28 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("String", "GOOGLE_DIRECTIONS_API_KEY", "\"${properties["GOOGLE_DIRECTIONS_API_KEY"] ?: ""}\"")
+        }
+        debug {
+            buildConfigField("String", "GOOGLE_DIRECTIONS_API_KEY", "\"${properties["GOOGLE_DIRECTIONS_API_KEY"] ?: ""}\"")
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
+    }
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.7.3"
@@ -64,11 +86,18 @@ dependencies {
     // Lifecycle
     implementation(libs.bundles.lifecycle)
 
+    // Networking (Retrofit + OkHttp)
+    implementation(libs.bundles.networking)
+    implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.12")
+
     // Image Loading
     implementation(libs.coil.compose)
 
     // JSON Parsing
     implementation(libs.gson)
+
+    // Networking (Retrofit + OkHttp)
+    implementation(libs.bundles.networking)
 
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.9.5")

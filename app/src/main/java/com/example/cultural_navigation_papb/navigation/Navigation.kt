@@ -107,7 +107,8 @@ fun CultureGuideNavHost() {
         // --- 6. Fitur Utama (Map, List, Detail) ---
         composable(Destinations.MAP) {
             MapScreen(
-                onNavigateToDetail = { placeId -> navController.navigate("detail/$placeId") }
+                onNavigateToDetail = { placeId -> navController.navigate("detail/$placeId") },
+                onBackClick = { navController.navigateUp() }
             )
         }
 

@@ -55,7 +55,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 val uid = result.user?.uid ?: throw Exception("Gagal mendapatkan UID")
 
                 // 2. Simpan data profil ke Database Lokal (Room)
-                val newUser = User(userId = uid, name = name, email = email)
+                val newUser = User(id = uid, name = name, email = email)
                 userDao.insertUser(newUser)
 
                 // 3. Mulai pantau data
@@ -89,7 +89,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     // Jika login sukses tapi data tidak ada di HP ini (misal install ulang)
                     // Maka buat data lokal baru berdasarkan info Firebase
                     val syncedUser = User(
-                        userId = uid,
+                        id = uid,
                         name = firebaseUser.displayName ?: "User", // Pakai nama default jika kosong
                         email = email
                     )
@@ -125,7 +125,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 if (imageUri != null) {
                     val context = getApplication<Application>()
                     val inputStream = context.contentResolver.openInputStream(imageUri)
-                    val file = File(context.filesDir, "profile_${user.userId}.jpg")
+                    val file = File(context.filesDir, "profile_${user.id}.jpg")
                     val outputStream = FileOutputStream(file)
                     inputStream?.copyTo(outputStream)
                     imagePath = file.absolutePath

@@ -28,6 +28,9 @@ class ReviewViewModel @Inject constructor(
     private val _comment = MutableStateFlow("")
     val comment: StateFlow<String> = _comment.asStateFlow()
 
+    private val _photos = MutableStateFlow<List<String>>(emptyList())
+    val photos: StateFlow<List<String>> = _photos.asStateFlow()
+
     private val _isSubmitting = MutableStateFlow(false)
     val isSubmitting: StateFlow<Boolean> = _isSubmitting.asStateFlow()
 
@@ -76,7 +79,69 @@ class ReviewViewModel @Inject constructor(
     }
 
     /**
+     * Update photos
+     */
+    fun updatePhotos(newPhotos: List<String>) {
+        _photos.value = newPhotos
+    }
+
+    /**
+     * Add photo
+     */
+    fun addPhoto(photoUrl: String) {
+        _photos.value = _photos.value + photoUrl
+    }
+
+    /**
+     * Remove photo
+     */
+    fun removePhoto(photoUrl: String) {
+        _photos.value = _photos.value.filter { it != photoUrl }
+    }
+
+    /**
      * Submit review baru
+     */
+    fun submitReview(
+        review: Review,
+        onSuccess: () -> Unit = {},
+        onError: (String) -> Unit = {}
+    ) {
+        if (review.rating == 0f) {
+            onError("Silakan berikan rating")
+            return
+        }
+
+        if (review.comment.isBlank()) {
+            onError("Silakan tulis komentar")
+            return
+        }
+
+        _isSubmitting.value = true
+        _submitError.value = null
+
+        viewModelScope.launch {
+            try {
+                placeRepository.addReview(review)
+
+                // Reset form
+                _rating.value = 0f
+                _comment.value = ""
+                _photos.value = emptyList()
+
+                onSuccess()
+
+            } catch (e: Exception) {
+                _submitError.value = "Gagal submit review: ${e.message}"
+                onError(e.message ?: "Gagal submit review")
+            } finally {
+                _isSubmitting.value = false
+            }
+        }
+    }
+
+    /**
+     * Submit review baru (legacy method)
      */
     fun submitReview(userId: String, userName: String) {
         val currentPlace = _currentPlace.value ?: run {
@@ -86,6 +151,11 @@ class ReviewViewModel @Inject constructor(
 
         if (_rating.value == 0f) {
             _submitError.value = "Silakan berikan rating"
+            return
+        }
+
+        if (_comment.value.isBlank()) {
+            _submitError.value = "Silakan tulis komentar"
             return
         }
 
@@ -100,7 +170,8 @@ class ReviewViewModel @Inject constructor(
                     userId = userId,
                     userName = userName,
                     rating = _rating.value,
-                    comment = _comment.value
+                    comment = _comment.value,
+                    photos = _photos.value
                 )
 
                 placeRepository.addReview(review)
@@ -108,6 +179,7 @@ class ReviewViewModel @Inject constructor(
                 // Reset form
                 _rating.value = 0f
                 _comment.value = ""
+                _photos.value = emptyList()
 
             } catch (e: Exception) {
                 _submitError.value = "Gagal submit review: ${e.message}"
@@ -143,6 +215,7 @@ class ReviewViewModel @Inject constructor(
     fun resetForm() {
         _rating.value = 0f
         _comment.value = ""
+        _photos.value = emptyList()
         _submitError.value = null
         _isSubmitting.value = false
     }
