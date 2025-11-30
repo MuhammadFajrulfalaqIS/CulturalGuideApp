@@ -11,6 +11,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -74,6 +75,50 @@ class MapsViewModel @Inject constructor(
     private val _selectedRoute = MutableStateFlow<List<LatLng>>(emptyList())
     val selectedRoute: StateFlow<List<LatLng>> = _selectedRoute.asStateFlow()
 
+    // ⭐ 8. ADDITIONAL STATE FOR GEOFENCING (for GeofenceMapScreen compatibility)
+    private val _isGeofencingActive = MutableStateFlow(false)
+    val isGeofencingActive: StateFlow<Boolean> = _isGeofencingActive.asStateFlow()
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
+
+    // Combined UI state for GeofenceMapScreen
+    data class MapUiState(
+        val places: List<Place> = emptyList(),
+        val userLocation: LatLng? = null,
+        val selectedPlace: Place? = null,
+        val isLoading: Boolean = false,
+        val isGeofencingActive: Boolean = false,
+        val error: String? = null
+    )
+
+    private val _uiState = MutableStateFlow(MapUiState())
+    val uiState: StateFlow<MapUiState> = _uiState.asStateFlow()
+
+    // Update UI state when individual states change
+    init {
+        // Set lokasi default Prambanan
+        _userLocation.value = LatLng(-7.7520, 110.4891)
+
+        // Inisialisasi aplikasi
+        initializeApp()
+    }
+
+    // Manual update function to sync state changes
+    private fun syncUiState() {
+        _uiState.value = MapUiState(
+            places = _nearbyPlaces.value,
+            userLocation = _userLocation.value,
+            selectedPlace = _selectedPlace.value,
+            isLoading = _isLoading.value,
+            isGeofencingActive = _isGeofencingActive.value,
+            error = _error.value
+        )
+    }
+
     fun onZoomChange(newZoom: Float, cameraPositionState: CameraPositionState) {
         // Luncurkan Coroutine untuk melakukan animasi secara non-blocking
         viewModelScope.launch {
@@ -125,9 +170,11 @@ class MapsViewModel @Inject constructor(
                 try {
                     val nearby = placeRepository.getNearbyPlaces(location, 15)
                     _nearbyPlaces.value = nearby
+                    syncUiState()
                 } catch (e: Exception) {
                     println("Error loading nearby places: ${e.message}")
                     _nearbyPlaces.value = emptyList()
+                    syncUiState()
                 }
             }
         }
@@ -198,15 +245,6 @@ class MapsViewModel @Inject constructor(
             results
         )
         return results[0]
-    }
-
-    // Implementasi inisialisasi
-    init {
-        // Set lokasi default Prambanan
-        _userLocation.value = LatLng(-7.7520, 110.4891)
-
-        // Inisialisasi aplikasi
-        initializeApp()
     }
 
     @SuppressLint("MissingPermission")
@@ -301,6 +339,19 @@ class MapsViewModel @Inject constructor(
         _showPath.value = false
     }
 
+    // Geofencing control methods
+    fun setGeofencingActive(active: Boolean) {
+        _isGeofencingActive.value = active
+    }
+
+    fun setLoading(loading: Boolean) {
+        _isLoading.value = loading
+    }
+
+    fun setError(error: String?) {
+        _error.value = error
+    }
+
     // --- ONCLEARED (KODE LENGKAP) ---
 // Dipanggil saat ViewModel dihancurkan (misalnya, saat MapScreen tidak lagi di layar)
     override fun onCleared() {
@@ -310,5 +361,3 @@ class MapsViewModel @Inject constructor(
         println("Location updates dihentikan saat ViewModel di-clear.")
     }
 }
-
-

@@ -57,8 +57,9 @@ room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 
 # Maps
 maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "googleMaps" }
-maps-v3 = { group = "com.google.android.gms", name = "play-services-maps", version = "18.2.0" }
-location = { group = "com.google.android.gms", name = "play-services-location", version = "21.0.1" }
+maps-v3 = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "googlePlayServicesMaps" }
+location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "googlePlayServicesLocation" }
+maps-utils = { group = "com.google.maps.android", name = "android-maps-utils", version = "3.8.2" }
 
 # Lifecycle/ViewModel
 lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
@@ -82,5 +83,5 @@ googleServices = { id = "com.google.gms.google-services", version.ref = "googleS
 [bundles]
 networking = [ "retrofit", "retrofit-converter-gson", "okhttp", "okhttp-logging-interceptor" ]
 room = [ "room-runtime", "room-ktx" ]
-maps = [ "maps-compose", "maps-v3", "location" ]
+maps = [ "maps-compose", "maps-v3", "location", "maps-utils" ]
 lifecycle = [ "lifecycle-runtime-compose", "lifecycle-viewmodel-compose" ]
