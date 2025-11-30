@@ -23,7 +23,7 @@ import com.example.cultural_navigation_papb.data.dao.VisitedPlaceDao
  */
 @Database(
     entities = [Place::class, Review::class, User::class, SavedPlace::class, VisitedPlace::class],
-    version = 6, // Update version untuk fix schema mismatch
+    version = 7, // Update version untuk fix schema mismatch
     exportSchema = false
 )
 @TypeConverters(Converters::class)

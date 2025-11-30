@@ -96,9 +96,6 @@ dependencies {
     // JSON Parsing
     implementation(libs.gson)
 
-    // Networking (Retrofit + OkHttp)
-    implementation(libs.bundles.networking)
-
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.9.5")
 
@@ -128,13 +125,23 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-auth")
+    // Firebase - Using BOM for version management
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-messaging-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-functions-ktx")
 
     // Coil untuk memuat gambar profile
     implementation("io.coil-kt:coil-compose:2.5.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+
+    // WorkManager for background tasks
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("androidx.hilt:hilt-work:1.1.0")
+
+    // Location Services for Geofencing
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 }

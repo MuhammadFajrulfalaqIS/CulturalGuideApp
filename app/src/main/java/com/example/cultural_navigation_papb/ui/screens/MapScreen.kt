@@ -46,12 +46,38 @@ fun MapScreen(
     viewModel: MapsViewModel = hiltViewModel<MapsViewModel>()
 ) {
     val context = LocalContext.current
+
+    // ✅ Simple way: Create GeofenceManager directly with context
+    val geofenceManager = remember {
+        com.example.cultural_navigation_papb.geofence.GeofenceManager(context)
+    }
+
     // State dari ViewModel
     val searchText by viewModel.searchText.collectAsState()
     val userLocation by viewModel.userLocation.collectAsState()
     val nearbyPlaces by viewModel.nearbyPlaces.collectAsState()
     val selectedPlace by viewModel.selectedPlace.collectAsState()
-    val visitedPlaces = emptySet<String>() // TODO: Implement visited places functionality
+
+    // ✅ FIX: Get visited places from actual Place data, not hardcoded empty set
+    val visitedPlaces = remember(nearbyPlaces) {
+        val visited = nearbyPlaces.filter { it.isVisited }.map { it.id }.toSet()
+        android.util.Log.d("MapScreen", "🔄 Visited places updated: ${visited.size} places")
+        visited.forEach { id ->
+            val place = nearbyPlaces.find { it.id == id }
+            android.util.Log.d("MapScreen", "  ✅ Visited: ${place?.name} (${place?.visitCount} times)")
+        }
+        visited
+    }
+
+    // ✅ FIX: Reload places periodically to reflect database changes
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(1000) // Wait 1 second
+        while (true) {
+            android.util.Log.d("MapScreen", "🔄 Reloading places from database...")
+            viewModel.loadNearbyPlaces() // Reload to get latest data
+            kotlinx.coroutines.delay(5000) // Refresh every 5 seconds
+        }
+    }
 
     // UI State
     val scope = rememberCoroutineScope()
@@ -76,6 +102,22 @@ fun MapScreen(
     // Camera position
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(initialLocation, 16f)
+    }
+
+    // ✅ REGISTER GEOFENCES - INI YANG PENTING!
+    LaunchedEffect(nearbyPlaces, locationPermissionState.status) {
+        if (nearbyPlaces.isNotEmpty() && locationPermissionState.status.isGranted) {
+            android.util.Log.d("MapScreen", "📍 Registering geofences for ${nearbyPlaces.size} places")
+            geofenceManager.registerGeofences(
+                places = nearbyPlaces,
+                onSuccess = {
+                    android.util.Log.d("MapScreen", "✅ Geofences registered successfully!")
+                },
+                onError = { error ->
+                    android.util.Log.e("MapScreen", "❌ Failed to register geofences: $error")
+                }
+            )
+        }
     }
 
     // Request location permission and start updates

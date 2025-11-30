@@ -37,6 +37,18 @@ class ReviewViewModel @Inject constructor(
     private val _submitError = MutableStateFlow<String?>(null)
     val submitError: StateFlow<String?> = _submitError.asStateFlow()
 
+    // UI state for review screen
+    private val _uiState = MutableStateFlow(ReviewUiState())
+    val uiState: StateFlow<ReviewUiState> = _uiState.asStateFlow()
+
+    data class ReviewUiState(
+        val place: Place? = null,
+        val isLoading: Boolean = false,
+        val isSubmitting: Boolean = false,
+        val reviewSubmitted: Boolean = false,
+        val error: String? = null
+    )
+
     // State untuk review list
     private val _reviews = MutableStateFlow<List<Review>>(emptyList())
     val reviews: StateFlow<List<Review>> = _reviews.asStateFlow()
@@ -100,6 +112,58 @@ class ReviewViewModel @Inject constructor(
     }
 
     /**
+     * Submit review untuk tempat
+     */
+    fun submitReview(review: Review) {
+        viewModelScope.launch {
+            try {
+                _isSubmitting.value = true
+                _submitError.value = null
+                placeRepository.addReview(review)
+                _submitError.value = null
+                // Mark as submitted successfully
+                _reviews.value = _reviews.value + review
+            } catch (e: Exception) {
+                _submitError.value = "Gagal submit review: ${e.message}"
+            } finally {
+                _isSubmitting.value = false
+            }
+        }
+    }
+
+    /**
+     * Get current user ID
+     */
+    fun getCurrentUserId(): String {
+        // In a real app, this would get from FirebaseAuth
+        return "current_user_id" // Placeholder
+    }
+
+    /**
+     * Load place for review
+     */
+    fun loadPlaceForReview(placeId: String) {
+        viewModelScope.launch {
+            try {
+                val place = placeRepository.getPlaceById(placeId)
+                _currentPlace.value = place
+                _uiState.value = _uiState.value.copy(
+                    place = place,
+                    isLoading = false,
+                    reviewSubmitted = false,
+                    error = null
+                )
+            } catch (e: Exception) {
+                _submitError.value = "Gagal memuat tempat: ${e.message}"
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = e.message
+                )
+            }
+        }
+    }
+
+    /**
      * Submit review baru
      */
     fun submitReview(
@@ -119,6 +183,10 @@ class ReviewViewModel @Inject constructor(
 
         _isSubmitting.value = true
         _submitError.value = null
+        _uiState.value = _uiState.value.copy(
+            isSubmitting = true,
+            error = null
+        )
 
         viewModelScope.launch {
             try {
@@ -129,13 +197,21 @@ class ReviewViewModel @Inject constructor(
                 _comment.value = ""
                 _photos.value = emptyList()
 
+                _uiState.value = _uiState.value.copy(
+                    isSubmitting = false,
+                    reviewSubmitted = true,
+                    error = null
+                )
+
                 onSuccess()
 
             } catch (e: Exception) {
                 _submitError.value = "Gagal submit review: ${e.message}"
+                _uiState.value = _uiState.value.copy(
+                    isSubmitting = false,
+                    error = e.message
+                )
                 onError(e.message ?: "Gagal submit review")
-            } finally {
-                _isSubmitting.value = false
             }
         }
     }
@@ -161,6 +237,10 @@ class ReviewViewModel @Inject constructor(
 
         _isSubmitting.value = true
         _submitError.value = null
+        _uiState.value = _uiState.value.copy(
+            isSubmitting = true,
+            error = null
+        )
 
         viewModelScope.launch {
             try {
@@ -181,8 +261,18 @@ class ReviewViewModel @Inject constructor(
                 _comment.value = ""
                 _photos.value = emptyList()
 
+                _uiState.value = _uiState.value.copy(
+                    isSubmitting = false,
+                    reviewSubmitted = true,
+                    error = null
+                )
+
             } catch (e: Exception) {
                 _submitError.value = "Gagal submit review: ${e.message}"
+                _uiState.value = _uiState.value.copy(
+                    isSubmitting = false,
+                    error = e.message
+                )
             } finally {
                 _isSubmitting.value = false
             }

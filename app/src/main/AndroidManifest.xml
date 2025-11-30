@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
 
     <!-- Permissions for gallery access in reviews -->
@@ -12,6 +13,22 @@
 
     <!-- Permissions for camera in reviews -->
     <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Permissions for geofencing and notifications -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Optional but recommended permissions -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- For Android 12+ exact alarms (if needed) -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
+    <!-- Foreground service permissions -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <application
         android:name=".CultureGuideApp"
         android:allowBackup="true"
@@ -25,6 +42,25 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBxBl-3w4N6j4QN54Q_JirpfSRyLFjTY-c" />
+        <!-- FCM Service for notifications -->
+        <service
+            android:name=".fcm.CulturalGuideFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- Geofence BroadcastReceiver -->
+        <receiver
+            android:name=".geofence.GeofenceBroadcastReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.android.gms.location.Geofence.ACTION_GEOFENCE_TRANSITION" />
+            </intent-filter>
+        </receiver>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -32,8 +68,39 @@
             android:theme="@style/Theme.Culturalnavigationpapb">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Deep linking for review screen -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="culturalguide"
+                    android:host="review" />
+
+                <data
+                    android:scheme="https"
+                    android:host="culturalguide.app"
+                    android:pathPrefix="/review" />
+            </intent-filter>
+
+            <!-- Deep linking for destination details -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="culturalguide"
+                    android:host="destination" />
+
+                <data
+                    android:scheme="https"
+                    android:host="culturalguide.app"
+                    android:pathPrefix="/destination" />
             </intent-filter>
         </activity>
     </application>

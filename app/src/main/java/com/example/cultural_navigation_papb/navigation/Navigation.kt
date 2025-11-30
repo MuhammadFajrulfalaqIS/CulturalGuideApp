@@ -1,6 +1,8 @@
 package com.example.cultural_navigation_papb.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -18,15 +20,16 @@ object Destinations {
     const val MAP = "map"
     const val LIST = "list"
     const val DETAIL = "detail/{placeId}"
+    const val REVIEW = "review/{placeId}" // New review route for geofence notifications
 
     const val PROFILE = "profile"
     const val INBOX = "inbox" // Rute baru untuk Inbox Offline
 }
 
 @Composable
-fun CultureGuideNavHost() {
-    val navController = rememberNavController()
-
+fun CultureGuideNavHost(
+    navController: NavHostController = rememberNavController()
+) {
     NavHost(
         navController = navController,
         startDestination = Destinations.ONBOARDING // Mulai dari Onboarding
@@ -129,6 +132,18 @@ fun CultureGuideNavHost() {
                     onNavigateBack = { navController.navigateUp() }
                 )
             }
+        }
+
+        // Review screen for geofence notifications and deep links
+        composable(
+            route = Destinations.REVIEW,
+            arguments = listOf(navArgument("placeId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val placeId = backStackEntry.arguments?.getString("placeId") ?: ""
+            GeofenceReviewScreen(
+                placeId = placeId,
+                onNavigateUp = { navController.navigateUp() }
+            )
         }
     }
 }
