@@ -45,6 +45,7 @@ fun SectionTitle(title: String) {
 fun DetailScreen(
     placeId: String,
     onNavigateBack: () -> Unit,
+    openReviewDialogOnStart: Boolean = false, // ✅ NEW: Parameter untuk auto-open review dialog dari notifikasi
     userId: String = "current_user_id", // TODO: Get from Auth
     userName: String = "User Name", // TODO: Get from Auth
     // ViewModel untuk mengambil data tempat (Data Asli)
@@ -99,6 +100,15 @@ fun DetailScreen(
 
     // 5. Dialog state for adding review
     var showAddReviewDialog by remember { mutableStateOf(false) }
+
+    // ✅ NEW: Auto-open review dialog jika dipanggil dari notifikasi
+    LaunchedEffect(openReviewDialogOnStart) {
+        if (openReviewDialogOnStart) {
+            android.util.Log.d("DetailScreen", "📝 Auto-opening review dialog from notification for place: $placeId")
+            kotlinx.coroutines.delay(500) // Delay sedikit agar UI sudah loaded
+            showAddReviewDialog = true
+        }
+    }
 
     // 6. Show success/error messages
     LaunchedEffect(isSubmitting) {

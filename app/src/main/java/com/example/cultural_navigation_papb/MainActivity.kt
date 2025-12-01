@@ -55,12 +55,17 @@ class MainActivity : ComponentActivity() {
     private fun handleDeepLink(intent: android.content.Intent, navController: NavHostController) {
         val uri = intent.data
 
-        // Handle notification action
-        if (intent.action == "REVIEW_DESTINATION") {
+        // ✅ Handle notification action from Geofence
+        if (intent.action == "OPEN_REVIEW_DIALOG" || intent.action == "REVIEW_DESTINATION") {
             val placeId = intent.getStringExtra("placeId")
+            val openReviewDialog = intent.getBooleanExtra("openReviewDialog", false)
+
             if (!placeId.isNullOrEmpty()) {
-                Log.d(TAG, "Navigating to review for placeId: $placeId")
-                navController.navigate(Destinations.REVIEW.replace("{placeId}", placeId))
+                Log.d(TAG, "📍 Navigating to detail screen for placeId: $placeId (openReviewDialog: $openReviewDialog)")
+
+                // Navigate to detail screen
+                // The review dialog will be opened automatically in DetailScreen if openReviewDialog is true
+                navController.navigate("${Destinations.DETAIL.replace("{placeId}", placeId)}?openReviewDialog=$openReviewDialog")
                 return
             }
         }
