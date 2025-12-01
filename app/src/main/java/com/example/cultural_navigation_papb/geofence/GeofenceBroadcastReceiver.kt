@@ -96,11 +96,11 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
                     Log.d(TAG, "✅ Successfully marked place as visited: ${updatedPlace.name}")
 
-                    // Show notification
-                    showNotification(context, place.name, "Selamat datang di ${place.name}! Jelajahi tempat bersejarah ini.")
+                    // ✅ FIX: Pass placeId instead of place.name
+                    showNotification(context, placeId, place.name, "Selamat datang di ${place.name}! Jelajahi tempat bersejarah ini.")
                 } else {
                     Log.d(TAG, "Place already visited: ${place.name}")
-                    showNotification(context, place.name, "Selamat datang kembali di ${place.name}!")
+                    showNotification(context, placeId, place.name, "Selamat datang kembali di ${place.name}!")
                 }
 
             } catch (e: Exception) {
@@ -127,15 +127,39 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun showNotification(context: Context, title: String, message: String) {
+    private fun showNotification(context: Context, placeId: String, placeName: String, message: String) {
         try {
+            // ✅ CREATE DEEP LINK INTENT TO OPEN DETAIL SCREEN WITH REVIEW DIALOG
+            val intent = Intent(context, com.example.cultural_navigation_papb.MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                action = "OPEN_REVIEW_DIALOG"
+                putExtra("placeId", placeId) // ✅ Pass correct placeId like "candi_siwa"
+                putExtra("openReviewDialog", true)
+            }
+
+            val pendingIntent = android.app.PendingIntent.getActivity(
+                context,
+                placeId.hashCode(),
+                intent,
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+            )
+
             val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle(title)
+                .setSmallIcon(R.drawable.ic_temple)
+                .setContentTitle("📍 $placeName")
                 .setContentText(message)
+                .setStyle(NotificationCompat.BigTextStyle().bigText(
+                    "$message\n\n✍️ Bagikan pengalaman Anda dan bantu pengunjung lain!"
+                ))
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
                 .setVibrate(longArrayOf(0, 500, 250, 500))
+                .setContentIntent(pendingIntent)
+                .addAction(
+                    R.drawable.ic_review,
+                    "Tulis Review",
+                    pendingIntent
+                )
 
             val notificationManager = NotificationManagerCompat.from(context)
 
@@ -143,17 +167,17 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 if (context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
                     == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                    notificationManager.notify(NOTIFICATION_ID, builder.build())
-                    Log.d(TAG, "Notification shown: $title")
+                    notificationManager.notify(placeId.hashCode(), builder.build())
+                    Log.d(TAG, "✅ Notification shown with review action: $placeName (ID: $placeId)")
                 } else {
-                    Log.w(TAG, "Notification permission not granted")
+                    Log.w(TAG, "⚠️ Notification permission not granted")
                 }
             } else {
-                notificationManager.notify(NOTIFICATION_ID, builder.build())
-                Log.d(TAG, "Notification shown: $title")
+                notificationManager.notify(placeId.hashCode(), builder.build())
+                Log.d(TAG, "✅ Notification shown: $placeName")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error showing notification", e)
+            Log.e(TAG, "❌ Error showing notification", e)
         }
     }
 }

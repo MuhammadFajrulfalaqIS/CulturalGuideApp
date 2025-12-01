@@ -168,11 +168,20 @@ class MapsViewModel @Inject constructor(
         viewModelScope.launch {
             _userLocation.value?.let { location ->
                 try {
-                    val nearby = placeRepository.getNearbyPlaces(location, 15)
+                    // ✅ FIX: Perbesar radius ke 50 km untuk memastikan semua candi Prambanan termuat
+                    // Candi Sewu dan Bubrah berjarak sekitar 800-1000 meter dari pusat
+                    val nearby = placeRepository.getNearbyPlaces(location, 50)
                     _nearbyPlaces.value = nearby
+
+                    // Log untuk debugging
+                    android.util.Log.d("MapsViewModel", "📍 Loaded ${nearby.size} places within 50km radius")
+                    nearby.forEach { place ->
+                        android.util.Log.d("MapsViewModel", "  - ${place.name} (${place.category}, visited: ${place.isVisited})")
+                    }
+
                     syncUiState()
                 } catch (e: Exception) {
-                    println("Error loading nearby places: ${e.message}")
+                    android.util.Log.e("MapsViewModel", "Error loading nearby places: ${e.message}")
                     _nearbyPlaces.value = emptyList()
                     syncUiState()
                 }

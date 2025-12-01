@@ -72,7 +72,8 @@
             </intent-filter>
 
             <!-- Deep linking for review screen -->
-            <intent-filter android:autoVerify="true">
+            <!-- Custom scheme for review -->
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
@@ -80,6 +81,13 @@
                 <data
                     android:scheme="culturalguide"
                     android:host="review" />
+            </intent-filter>
+
+            <!-- HTTPS scheme for review -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
                     android:scheme="https"
@@ -88,7 +96,8 @@
             </intent-filter>
 
             <!-- Deep linking for destination details -->
-            <intent-filter android:autoVerify="true">
+            <!-- Custom scheme for destination -->
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
@@ -96,6 +105,13 @@
                 <data
                     android:scheme="culturalguide"
                     android:host="destination" />
+            </intent-filter>
+
+            <!-- HTTPS scheme for destination -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
                     android:scheme="https"

@@ -26,7 +26,7 @@ class GeofenceManager @Inject constructor(
     companion object {
         private const val TAG = "GeofenceManager"
         private const val GEOFENCE_PENDING_INTENT_REQUEST_CODE = 1001
-        private const val DEFAULT_RADIUS = 50f // 50 meters radius
+        private const val DEFAULT_RADIUS = 30f // 50 meters radius
         private const val GEOFENCE_EXPIRATION = Geofence.NEVER_EXPIRE
     }
 

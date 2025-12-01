@@ -123,13 +123,22 @@ fun CultureGuideNavHost(
 
         composable(
             route = Destinations.DETAIL,
-            arguments = listOf(navArgument("placeId") { type = NavType.StringType })
+            arguments = listOf(
+                navArgument("placeId") { type = NavType.StringType },
+                navArgument("openReviewDialog") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                }
+            )
         ) { backStackEntry ->
             val placeId = backStackEntry.arguments?.getString("placeId")
+            val openReviewDialog = backStackEntry.arguments?.getBoolean("openReviewDialog") ?: false
+
             if (placeId != null) {
                 DetailScreen(
                     placeId = placeId,
-                    onNavigateBack = { navController.navigateUp() }
+                    onNavigateBack = { navController.navigateUp() },
+                    openReviewDialogOnStart = openReviewDialog
                 )
             }
         }
