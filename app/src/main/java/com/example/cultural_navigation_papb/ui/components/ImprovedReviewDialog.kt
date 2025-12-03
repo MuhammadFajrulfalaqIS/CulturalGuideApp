@@ -17,7 +17,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -31,11 +35,11 @@ import coil.compose.AsyncImage
 import com.example.cultural_navigation_papb.data.models.Place
 import com.example.cultural_navigation_papb.data.viewmodels.AuthViewModel
 import com.example.cultural_navigation_papb.data.viewmodels.ReviewViewModel
-import com.example.cultural_navigation_papb.data.models.Review
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
-import java.util.*
+import java.util.Locale
+import kotlin.math.round
 
 // Earth tone colors matching the theme
 val EarthBrown = Color(0xFF3E2723)
@@ -283,7 +287,7 @@ fun ImprovedReviewDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // ===== RATING SECTION =====
+                // ===== IMPROVED RATING SECTION =====
                 Text(
                     text = "⭐ Berikan Rating",
                     fontSize = 16.sp,
@@ -293,39 +297,158 @@ fun ImprovedReviewDialog(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            color = Color(0xFFFFF8E1),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+                // Rating Display Card
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFFFF8E1)
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    (1..5).forEach { star ->
-                        IconButton(
-                            onClick = { reviewViewModel.updateRating(star.toFloat()) },
-                            modifier = Modifier.size(44.dp)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // Star Display - Improved partial fill
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Icon(
-                                imageVector = if (star <= rating) Icons.Filled.Star else Icons.Outlined.StarBorder,
-                                contentDescription = "Rating star $star",
-                                tint = if (star <= rating) OrangeAccent else LightGray,
-                                modifier = Modifier.size(28.dp)
+                            (1..5).forEach { star ->
+                                val starFillPercentage = when {
+                                    rating >= star -> 1f
+                                    rating > star - 1 -> rating - (star - 1)
+                                    else -> 0f
+                                }
+
+                                Box(
+                                    modifier = Modifier.padding(horizontal = 4.dp)
+                                ) {
+                                    // Background outline star
+                                    Icon(
+                                        imageVector = Icons.Outlined.StarBorder,
+                                        contentDescription = "Star outline $star",
+                                        tint = LightGray,
+                                        modifier = Modifier.size(36.dp)
+                                    )
+
+                                    // Filled star with partial clip
+                                    if (starFillPercentage > 0f) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Star,
+                                            contentDescription = "Star filled $star",
+                                            tint = OrangeAccent,
+                                            modifier = Modifier
+                                                .size(36.dp)
+                                                .drawWithContent {
+                                                    clipPath(
+                                                        Path().apply {
+                                                            addRect(
+                                                                Rect(
+                                                                    left = 0f,
+                                                                    top = 0f,
+                                                                    right = size.width * starFillPercentage,
+                                                                    bottom = size.height
+                                                                )
+                                                            )
+                                                        }
+                                                    ) {
+                                                        this@drawWithContent.drawContent()
+                                                    }
+                                                }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Rating Number Display
+                        Text(
+                            text = if (rating > 0) String.format(Locale.US, "%.1f", rating) else "0.0",
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = OrangeAccent
+                        )
+
+                        Text(
+                            text = getRatingText(rating),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = LightBrown
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Slider
+                        Column(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Slider(
+                                value = rating,
+                                onValueChange = { newValue ->
+                                    // Round to nearest 0.1
+                                    val rounded = (round(newValue * 10) / 10f).coerceIn(0f, 5f)
+                                    reviewViewModel.updateRating(rounded)
+                                },
+                                valueRange = 0f..5f,
+                                steps = 49, // 5.0 / 0.1 - 1 = 49 steps
+                                colors = SliderDefaults.colors(
+                                    thumbColor = OrangeAccent,
+                                    activeTrackColor = OrangeAccent,
+                                    inactiveTrackColor = LightGray.copy(alpha = 0.3f)
+                                ),
+                                modifier = Modifier.fillMaxWidth()
                             )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Quick rating buttons
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                listOf(1f, 2f, 3f, 4f, 5f).forEach { quickRating ->
+                                    OutlinedButton(
+                                        onClick = { reviewViewModel.updateRating(quickRating) },
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(horizontal = 2.dp)
+                                            .height(36.dp),
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = ButtonDefaults.outlinedButtonColors(
+                                            containerColor = if (rating == quickRating)
+                                                OrangeAccent.copy(alpha = 0.1f)
+                                            else Color.Transparent,
+                                            contentColor = if (rating == quickRating)
+                                                OrangeAccent
+                                            else LightBrown
+                                        ),
+                                        border = androidx.compose.foundation.BorderStroke(
+                                            width = if (rating == quickRating) 2.dp else 1.dp,
+                                            color = if (rating == quickRating)
+                                                OrangeAccent
+                                            else LightGray
+                                        ),
+                                        contentPadding = PaddingValues(4.dp)
+                                    ) {
+                                        Text(
+                                            text = quickRating.toInt().toString(),
+                                            fontSize = 13.sp,
+                                            fontWeight = if (rating == quickRating)
+                                                FontWeight.Bold
+                                            else FontWeight.Normal
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    Text(
-                        text = if (rating > 0) "${rating.toInt()}/5" else "Pilih rating",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (rating > 0) OrangeAccent else DarkGray
-                    )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -593,5 +716,19 @@ fun ImprovedReviewDialog(
                 )
             }
         }
+    }
+}
+
+/**
+ * Helper function to get rating description text
+ */
+private fun getRatingText(rating: Float): String {
+    return when {
+        rating == 0f -> "Pilih rating Anda"
+        rating < 1.5f -> "Sangat Buruk"
+        rating < 2.5f -> "Buruk"
+        rating < 3.5f -> "Cukup"
+        rating < 4.5f -> "Baik"
+        else -> "Sangat Baik"
     }
 }

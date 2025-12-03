@@ -272,6 +272,9 @@ class ReviewViewModel @Inject constructor(
 
                 placeRepository.addReview(review)
 
+                // ✅ RELOAD reviews setelah submit berhasil
+                loadReviewsForPlace(currentPlace.id)
+
                 // Reset form
                 _rating.value = 0f
                 _comment.value = ""
@@ -350,5 +353,12 @@ class ReviewViewModel @Inject constructor(
         }
 
         return distribution
+    }
+
+    /**
+     * Get sorted reviews (highest rating first)
+     */
+    fun getSortedReviews(): List<Review> {
+        return _reviews.value.sortedByDescending { it.rating }
     }
 }
