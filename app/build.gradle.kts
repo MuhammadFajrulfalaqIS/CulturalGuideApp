@@ -32,8 +32,12 @@ android {
         }
 
         // BuildConfig fields for API keys
-        buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"${localProperties.getProperty("GOOGLE_MAPS_API_KEY")}\"")
-        buildConfigField("String", "GOOGLE_DIRECTIONS_API_KEY", "\"${localProperties.getProperty("GOOGLE_DIRECTIONS_API_KEY")}\"")
+        buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"${localProperties.getProperty("GOOGLE_MAPS_API_KEY") ?: ""}\"")
+        buildConfigField("String", "GOOGLE_DIRECTIONS_API_KEY", "\"${localProperties.getProperty("GOOGLE_DIRECTIONS_API_KEY") ?: ""}\"")
+
+        // ✅ NEW: Cloudinary credentials untuk upload gambar review
+        buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"${localProperties.getProperty("CLOUDINARY_CLOUD_NAME") ?: ""}\"")
+        buildConfigField("String", "CLOUDINARY_UPLOAD_PRESET", "\"${localProperties.getProperty("CLOUDINARY_UPLOAD_PRESET") ?: ""}\"")
     }
 
     buildTypes {
@@ -43,31 +47,26 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "GOOGLE_DIRECTIONS_API_KEY", "\"${properties["GOOGLE_DIRECTIONS_API_KEY"] ?: ""}\"")
         }
-        debug {
-            buildConfigField("String", "GOOGLE_DIRECTIONS_API_KEY", "\"${properties["GOOGLE_DIRECTIONS_API_KEY"] ?: ""}\"")
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = "17"
     }
 
-    java {
-        toolchain {
-            languageVersion = JavaLanguageVersion.of(17)
-        }
-    }
+    // ✅ IMPORTANT: Enable BuildConfig
     buildFeatures {
         compose = true
-        buildConfig = true
+        buildConfig = true // Enable BuildConfig generation
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.7.3"
+    }
+
+    // ✅ NEW: Set consistent JVM target compatibility
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = "11"
     }
 }
 

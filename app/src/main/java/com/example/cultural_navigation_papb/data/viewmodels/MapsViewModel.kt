@@ -27,6 +27,8 @@ import com.google.android.gms.maps.model.LatLngBounds
 import dagger.hilt.android.qualifiers.ApplicationContext
 import com.example.cultural_navigation_papb.data.models.Place
 import com.example.cultural_navigation_papb.data.repository.PlaceRepository
+import com.example.cultural_navigation_papb.data.api.DirectionsApiService
+import com.example.cultural_navigation_papb.data.api.DirectionResult
 
 // HiltViewModel menandai kelas ini agar Hilt dapat menyuntikkan dependensinya
 @HiltViewModel
@@ -74,6 +76,10 @@ class MapsViewModel @Inject constructor(
     // ⭐ 7. STATE UNTUK SELECTED ROUTE
     private val _selectedRoute = MutableStateFlow<List<LatLng>>(emptyList())
     val selectedRoute: StateFlow<List<LatLng>> = _selectedRoute.asStateFlow()
+
+    // ✅ NEW: State untuk route info (distance & duration)
+    private val _routeInfo = MutableStateFlow<RouteInfo?>(null)
+    val routeInfo: StateFlow<RouteInfo?> = _routeInfo.asStateFlow()
 
     // ⭐ 8. ADDITIONAL STATE FOR GEOFENCING (for GeofenceMapScreen compatibility)
     private val _isGeofencingActive = MutableStateFlow(false)
@@ -273,71 +279,70 @@ class MapsViewModel @Inject constructor(
         )
     }
 
+    // ✅ NEW: Directions API Service
+    private val directionsApiService = DirectionsApiService()
+
     // ⭐ ROUTING FUNCTIONS
+    /**
+     * ✅ NEW: Generate route menggunakan REAL Google Directions API
+     * Ini akan menghasilkan rute walking yang akurat sesuai jalan yang ada
+     */
     fun generateRouteToPlace(userLocation: LatLng, destination: Place) {
         viewModelScope.launch {
             try {
-                // Generate realistic walking path within Prambanan complex
-                val route = generateRealisticWalkingPath(userLocation, destination.getLatLng())
-                _selectedRoute.value = route
-                _showPath.value = true
+                _isLoading.value = true
+                android.util.Log.d("MapsViewModel", "🗺️ Requesting walking route from Directions API...")
+
+                // ✅ Call REAL Directions API
+                val result = directionsApiService.getWalkingDirections(userLocation, destination.getLatLng())
+
+                when (result) {
+                    is DirectionResult.Success -> {
+                        _selectedRoute.value = result.path
+                        _showPath.value = true
+                        _routeInfo.value = RouteInfo(
+                            distance = result.distance,
+                            duration = result.duration,
+                            steps = result.steps
+                        )
+                        android.util.Log.d("MapsViewModel", "✅ Route loaded: ${result.distance}, ${result.duration}, ${result.path.size} points")
+                    }
+                    is DirectionResult.Error -> {
+                        android.util.Log.e("MapsViewModel", "❌ Directions API error: ${result.message}")
+                        // Fallback to simple curved path
+                        _selectedRoute.value = generateFallbackPath(userLocation, destination.getLatLng())
+                        _showPath.value = true
+                        _routeInfo.value = null
+                        _error.value = "Tidak dapat memuat rute. Menampilkan jalur sederhana."
+                    }
+                }
+
+                _isLoading.value = false
             } catch (e: Exception) {
-                println("Error generating route: ${e.message}")
-                // Fallback to straight line if path generation fails
-                _selectedRoute.value = listOf(userLocation, destination.getLatLng())
+                android.util.Log.e("MapsViewModel", "❌ Error generating route", e)
+                // Fallback to simple curved path
+                _selectedRoute.value = generateFallbackPath(userLocation, destination.getLatLng())
                 _showPath.value = true
+                _routeInfo.value = null
+                _error.value = "Tidak dapat memuat rute: ${e.message}"
+                _isLoading.value = false
             }
         }
     }
 
-    // Generate realistic walking path with curves and intermediate points
-    private fun generateRealisticWalkingPath(start: LatLng, end: LatLng): List<LatLng> {
+    /**
+     * Fallback path generator jika Directions API gagal
+     * Membuat simple curved path
+     */
+    private fun generateFallbackPath(start: LatLng, end: LatLng): List<LatLng> {
         val pathPoints = mutableListOf<LatLng>()
-
-        // Add starting point
         pathPoints.add(start)
 
-        // Calculate intermediate points for a natural walking path
         val midPoint = LatLng(
             (start.latitude + end.latitude) / 2,
             (start.longitude + end.longitude) / 2
         )
-
-        // Add curve to simulate walking paths around temple structures
-        val distance = calculateDistance(start, end)
-
-        if (distance > 50) { // Only add curves for longer distances
-            // Create a curved path with 2-3 intermediate points
-            val curveOffset = distance * 0.0001f // Adjust curve intensity based on distance
-
-            // First curve point (slightly offset from direct path)
-            val curve1 = LatLng(
-                midPoint.latitude + curveOffset * 0.5f,
-                midPoint.longitude - curveOffset * 0.3f
-            )
-            pathPoints.add(curve1)
-
-            // Second curve point for longer distances
-            if (distance > 100) {
-                val curve2 = LatLng(
-                    midPoint.latitude - curveOffset * 0.3f,
-                    midPoint.longitude + curveOffset * 0.4f
-                )
-                pathPoints.add(curve2)
-            }
-
-            // Approach point near destination
-            val approachPoint = LatLng(
-                (end.latitude + midPoint.latitude) / 2,
-                (end.longitude + midPoint.longitude) / 2
-            )
-            pathPoints.add(approachPoint)
-        } else {
-            // For short distances, just add one intermediate point
-            pathPoints.add(midPoint)
-        }
-
-        // Add final destination point
+        pathPoints.add(midPoint)
         pathPoints.add(end)
 
         return pathPoints
@@ -346,6 +351,7 @@ class MapsViewModel @Inject constructor(
     fun clearRoute() {
         _selectedRoute.value = emptyList()
         _showPath.value = false
+        _routeInfo.value = null
     }
 
     // Geofencing control methods
@@ -370,3 +376,12 @@ class MapsViewModel @Inject constructor(
         println("Location updates dihentikan saat ViewModel di-clear.")
     }
 }
+
+/**
+ * ✅ NEW: Data class untuk menyimpan info route (distance, duration, steps)
+ */
+data class RouteInfo(
+    val distance: String,
+    val duration: String,
+    val steps: List<com.example.cultural_navigation_papb.data.api.DirectionStep>
+)

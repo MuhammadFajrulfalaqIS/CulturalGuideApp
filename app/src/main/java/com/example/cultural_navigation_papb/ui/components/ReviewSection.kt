@@ -171,11 +171,13 @@ fun ReviewSection(
                 }
             }
         } else {
-            LazyColumn(
+            // ✅ FIXED: Menggunakan Column biasa, bukan LazyColumn
+            // LazyColumn di dalam parent yang sudah scrollable menyebabkan crash
+            Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                items(reviews) { review ->
+                reviews.forEach { review ->
                     ReviewItem(
                         review = review,
                         dateFormatter = dateFormatter,

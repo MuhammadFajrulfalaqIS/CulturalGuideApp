@@ -18,3 +18,19 @@ plugins {
 
 //    id("com.google.gms.google-services") version "4.4.4" apply false
 }
+
+// Configure JVM toolchain for consistent compilation across all tasks
+allprojects {
+    tasks.withType<JavaCompile>().configureEach {
+        sourceCompatibility = "11"
+        targetCompatibility = "11"
+    }
+}
+
+subprojects {
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+        }
+    }
+}

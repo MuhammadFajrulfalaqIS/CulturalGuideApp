@@ -57,6 +57,10 @@ fun MapScreen(
     val userLocation by viewModel.userLocation.collectAsState()
     val nearbyPlaces by viewModel.nearbyPlaces.collectAsState()
     val selectedPlace by viewModel.selectedPlace.collectAsState()
+    val selectedRoute by viewModel.selectedRoute.collectAsState()
+    val showPath by viewModel.showPath.collectAsState()
+    val routeInfo by viewModel.routeInfo.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     // ✅ FIX: Get visited places from actual Place data, not hardcoded empty set
     val visitedPlaces = remember(nearbyPlaces) {
@@ -238,6 +242,16 @@ fun MapScreen(
                     }
                 )
             }
+
+            // ✅ NEW: Draw route polyline if available
+            if (showPath && selectedRoute.isNotEmpty()) {
+                Polyline(
+                    points = selectedRoute,
+                    color = Color(0xFF4A90E2), // Blue color for route
+                    width = 12f,
+                    geodesic = true
+                )
+            }
         }
 
         // Top controls
@@ -414,15 +428,27 @@ fun MapScreen(
                         onNavigateToDetail(placeId)
                     },
                     onGetDirections = { place ->
-                        // Handle navigation to place
-                        scope.launch {
-                            cameraPositionState.animate(
-                                update = CameraUpdateFactory.newLatLngZoom(
-                                    LatLng(place.latitude, place.longitude),
-                                    18f
-                                ),
-                                durationMs = 1500
-                            )
+                        // ✅ NEW: Generate route using Google Directions API
+                        userLocation?.let { currentLocation ->
+                            android.util.Log.d("MapScreen", "🗺️ Getting directions to ${place.name}")
+                            viewModel.generateRouteToPlace(currentLocation, place)
+
+                            // Animate camera to show full route
+                            scope.launch {
+                                // Wait a bit for route to load
+                                kotlinx.coroutines.delay(500)
+
+                                // Fit camera to show both user location and destination
+                                val boundsBuilder = com.google.android.gms.maps.model.LatLngBounds.Builder()
+                                boundsBuilder.include(currentLocation)
+                                boundsBuilder.include(LatLng(place.latitude, place.longitude))
+
+                                val bounds = boundsBuilder.build()
+                                cameraPositionState.animate(
+                                    update = CameraUpdateFactory.newLatLngBounds(bounds, 100),
+                                    durationMs = 1000
+                                )
+                            }
                         }
                         showPlacePopup = false
                         popupPlace = null

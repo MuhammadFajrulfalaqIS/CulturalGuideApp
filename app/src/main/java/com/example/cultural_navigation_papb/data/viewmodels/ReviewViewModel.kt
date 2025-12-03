@@ -21,6 +21,10 @@ class ReviewViewModel @Inject constructor(
     private val placeRepository: PlaceRepository
 ) : ViewModel() {
 
+    companion object {
+        private const val TAG = "ReviewViewModel"
+    }
+
     // State untuk review form
     private val _rating = MutableStateFlow(0f)
     val rating: StateFlow<Float> = _rating.asStateFlow()
@@ -62,16 +66,28 @@ class ReviewViewModel @Inject constructor(
     fun loadReviewsForPlace(placeId: String) {
         viewModelScope.launch {
             try {
-                placeRepository.getReviewsForPlace(placeId).collect { reviewList ->
-                    _reviews.value = reviewList
-                }
+                android.util.Log.d(TAG, "🔄 Loading reviews for place: $placeId")
+
+                // Get reviews dari Firestore (dengan fallback ke local DB)
+                val reviewList = placeRepository.getReviewsForPlace(placeId)
+
+                android.util.Log.d(TAG, "✅ Successfully loaded ${reviewList.size} reviews for place: $placeId")
+                _reviews.value = reviewList
 
                 // Load place info
-                placeRepository.getPlaceById(placeId)?.let { place ->
+                val place = placeRepository.getPlaceById(placeId)
+                if (place != null) {
                     _currentPlace.value = place
+                    android.util.Log.d(TAG, "✅ Loaded place: ${place.name}")
+                } else {
+                    android.util.Log.w(TAG, "⚠️ Place not found: $placeId")
                 }
+
+                _submitError.value = null
             } catch (e: Exception) {
+                android.util.Log.e(TAG, "❌ Error loading reviews: ${e.message}", e)
                 _submitError.value = "Gagal memuat review: ${e.message}"
+                _reviews.value = emptyList()
             }
         }
     }
