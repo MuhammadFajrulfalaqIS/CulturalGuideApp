@@ -46,8 +46,6 @@ fun DetailScreen(
     placeId: String,
     onNavigateBack: () -> Unit,
     openReviewDialogOnStart: Boolean = false, // ✅ NEW: Parameter untuk auto-open review dialog dari notifikasi
-    userId: String = "current_user_id", // TODO: Get from Auth
-    userName: String = "User Name", // TODO: Get from Auth
     // ViewModel untuk mengambil data tempat (Data Asli)
     viewModel: PlaceViewModel = hiltViewModel(),
     // ViewModel untuk fitur download offline (Database Lokal)
@@ -86,9 +84,14 @@ fun DetailScreen(
     // 'collectAsState' akan memantau perubahan database secara real-time
     val isDownloaded by inboxViewModel.isDownloaded(placeId).collectAsState(initial = false)
 
-    // 3. Load reviews untuk tempat ini
+    // 3. Load reviews untuk tempat ini dengan proper error handling
     LaunchedEffect(placeId) {
-        reviewViewModel.loadReviewsForPlace(placeId)
+        try {
+            android.util.Log.d("DetailScreen", "🔄 Loading reviews for place: $placeId")
+            reviewViewModel.loadReviewsForPlace(placeId)
+        } catch (e: Exception) {
+            android.util.Log.e("DetailScreen", "❌ Error loading reviews: ${e.message}", e)
+        }
     }
 
     // 4. Review state management
@@ -188,133 +191,144 @@ fun DetailScreen(
         } else {
             val currentPlace = place
             if (currentPlace != null) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                // --- 1. Header Image ---
-                Box(
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(280.dp)
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .verticalScroll(rememberScrollState())
                 ) {
-                    AsyncImage(
-                        model = currentPlace.imageUrl,
-                        contentDescription = currentPlace.name,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-
-                // --- 2. Content Section ---
-                Column(modifier = Modifier.padding(16.dp)) {
-                    // Title
-                    Text(
-                        text = currentPlace.name,
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF4A3428) // Dark brown
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Category Chip
-                    SuggestionChip(
-                        onClick = { },
-                        label = { Text("Wisata Sejarah") },
-                        colors = SuggestionChipDefaults.suggestionChipColors(
-                            containerColor = Color(0xFFC9A882), // Light brown
-                            labelColor = Color(0xFF4A3428) // Dark brown text
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Overview Section
-                    SectionTitle("Tentang")
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = currentPlace.detailedDescription,
-                        style = MaterialTheme.typography.bodyLarge,
-                        lineHeight = 24.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                    // Historical Information Section
-                    if (currentPlace.historicalInfo.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(24.dp))
-                        SectionTitle("Sejarah")
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = currentPlace.historicalInfo,
-                            style = MaterialTheme.typography.bodyLarge,
-                            lineHeight = 24.sp,
-                            color = MaterialTheme.colorScheme.onSurface
+                    // --- 1. Header Image ---
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(280.dp)
+                    ) {
+                        AsyncImage(
+                            model = currentPlace.imageUrl,
+                            contentDescription = currentPlace.name,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
 
-                    // Architecture Section
-                    if (currentPlace.architectureInfo.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(24.dp))
-                        SectionTitle("Arsitektur")
-                        Spacer(modifier = Modifier.height(8.dp))
+                    // --- 2. Content Section ---
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        // Title
                         Text(
-                            text = currentPlace.architectureInfo,
-                            style = MaterialTheme.typography.bodyLarge,
-                            lineHeight = 24.sp,
-                            color = MaterialTheme.colorScheme.onSurface
+                            text = currentPlace.name,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF4A3428) // Dark brown
                         )
-                    }
 
-                    // Visiting Information Section
-                    if (currentPlace.visitingInfo.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFFC9A882) // Light brown
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Category Chip
+                        SuggestionChip(
+                            onClick = { },
+                            label = { Text("Wisata Sejarah") },
+                            colors = SuggestionChipDefaults.suggestionChipColors(
+                                containerColor = Color(0xFFC9A882), // Light brown
+                                labelColor = Color(0xFF4A3428) // Dark brown text
                             )
-                        ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                SectionTitle("Informasi Kunjungan")
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = currentPlace.visitingInfo,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    lineHeight = 22.sp,
-                                    color = Color(0xFF4A3428) // Dark brown text
-                                )
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Overview Section
+                        SectionTitle("Tentang")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = currentPlace.detailedDescription,
+                            style = MaterialTheme.typography.bodyLarge,
+                            lineHeight = 24.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        // Historical Information Section
+                        if (currentPlace.historicalInfo.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(24.dp))
+                            SectionTitle("Sejarah")
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = currentPlace.historicalInfo,
+                                style = MaterialTheme.typography.bodyLarge,
+                                lineHeight = 24.sp,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+
+                        // Architecture Section
+                        if (currentPlace.architectureInfo.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(24.dp))
+                            SectionTitle("Arsitektur")
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = currentPlace.architectureInfo,
+                                style = MaterialTheme.typography.bodyLarge,
+                                lineHeight = 24.sp,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+
+                        // Visiting Information Section
+                        if (currentPlace.visitingInfo.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(24.dp))
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0xFFC9A882) // Light brown
+                            )
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    SectionTitle("Informasi Kunjungan")
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = currentPlace.visitingInfo,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        lineHeight = 22.sp,
+                                        color = Color(0xFF4A3428) // Dark brown text
+                                    )
+                                }
                             }
                         }
+
+                        // Reviews Section
+                        ReviewSection(
+                            reviews = reviews,
+                            averageRating = averageRating,
+                            ratingDistribution = ratingDistribution,
+                            onAddReview = { showAddReviewDialog = true },
+                            onHelpfulClick = { reviewId ->
+                                reviewViewModel.markReviewHelpful(reviewId)
+                            }
+                        )
+
+                        // Tambahan Spacer di bawah agar konten tidak tertutup FAB
+                        Spacer(modifier = Modifier.height(80.dp))
                     }
-
-                    // Reviews Section
-                    ReviewSection(
-                        reviews = reviews,
-                        averageRating = averageRating,
-                        ratingDistribution = ratingDistribution,
-                        onAddReview = { showAddReviewDialog = true },
-                        onHelpfulClick = { reviewId ->
-                            reviewViewModel.markReviewHelpful(reviewId)
-                        }
-                    )
-
-                    // Tambahan Spacer di bawah agar konten tidak tertutup FAB
-                    Spacer(modifier = Modifier.height(80.dp))
+                }
+            } else {
+                // Place not found
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Tempat tidak ditemukan")
                 }
             }
         }
-    }
 
-    // Add Review Dialog
-    val dialogPlace = place
-    if (showAddReviewDialog && dialogPlace != null) {
-        ImprovedReviewDialog(
-            place = dialogPlace,
-            onDismiss = { showAddReviewDialog = false }
-        )
+        // Add Review Dialog
+        val dialogPlace = place
+        if (showAddReviewDialog && dialogPlace != null) {
+            ImprovedReviewDialog(
+                place = dialogPlace,
+                onDismiss = { showAddReviewDialog = false }
+            )
+        }
     }
 }
 
@@ -327,5 +341,4 @@ fun DetailScreenPreview() {
             onNavigateBack = {}
         )
     }
-}
 }

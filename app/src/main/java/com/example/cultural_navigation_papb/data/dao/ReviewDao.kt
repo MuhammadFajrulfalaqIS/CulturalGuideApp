@@ -13,6 +13,9 @@ interface ReviewDao {
     @Query("SELECT * FROM reviews WHERE placeId = :placeId ORDER BY timestamp DESC")
     fun getReviewsForPlace(placeId: String): Flow<List<Review>>
 
+    @Query("SELECT * FROM reviews WHERE placeId = :placeId ORDER BY timestamp DESC")
+    suspend fun getReviewsForPlaceSync(placeId: String): List<Review>
+
     @Query("SELECT * FROM reviews WHERE placeId = :placeId ORDER BY timestamp DESC LIMIT :limit")
     suspend fun getRecentReviewsForPlace(placeId: String, limit: Int = 5): List<Review>
 
@@ -24,6 +27,9 @@ interface ReviewDao {
 
     @Query("SELECT * FROM reviews WHERE userId = :userId ORDER BY timestamp DESC")
     fun getUserReviews(userId: String): Flow<List<Review>>
+
+    @Query("SELECT * FROM reviews WHERE userId = :userId ORDER BY timestamp DESC")
+    suspend fun getUserReviewsSync(userId: String): List<Review>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertReview(review: Review)

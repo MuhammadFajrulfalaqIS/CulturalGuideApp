@@ -2,9 +2,11 @@ package com.example.cultural_navigation_papb.di
 
 import android.content.Context
 import androidx.room.Room
+import com.example.cultural_navigation_papb.data.api.FirestoreService
 import com.example.cultural_navigation_papb.data.dao.PlaceDao
 import com.example.cultural_navigation_papb.data.dao.ReviewDao
 import com.example.cultural_navigation_papb.data.database.AppDatabase
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -44,5 +46,16 @@ object DatabaseModule {
     fun provideReviewDao(database: AppDatabase): ReviewDao {
         return database.reviewDao()
     }
-}
 
+    @Provides
+    @Singleton
+    fun provideFirebaseFirestore(): FirebaseFirestore {
+        return FirebaseFirestore.getInstance()
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirestoreService(firestore: FirebaseFirestore): FirestoreService {
+        return FirestoreService(firestore)
+    }
+}
