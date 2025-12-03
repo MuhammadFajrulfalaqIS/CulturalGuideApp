@@ -222,22 +222,7 @@ fun PrambananCarousel(highlights: List<Place>) {
                     }
                 }
             }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                contentAlignment = Alignment.TopCenter
-            ) {
-                Text(
-                    text = "Slides Carousel",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier
-                        .background(Color.Black.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
-                )
-            }
+
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
