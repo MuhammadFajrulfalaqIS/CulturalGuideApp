@@ -61,6 +61,11 @@ fun HomeScreen(
             }
     } ?: "Pengunjung"
 
+    // Pilih 3 destinasi acak dari semua destinasi yang tersedia
+    val randomHighlights = remember {
+        PrambananData.allTemples.shuffled().take(3)
+    }
+
     // Warna tema coklat
     val darkBrown = Color(0xFF3E2723)
     val lightBrown = Color(0xFF5D4037)
@@ -124,13 +129,13 @@ fun HomeScreen(
                     }
                 }
 
-                // Carousel Section - UPDATED: Use first 3 items from PrambananData
+                // Carousel Section - Shows 3 random destinations each time the app opens
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 16.dp)
                 ) {
-                    PrambananCarousel(highlights = PrambananData.allTemples.take(3))
+                    PrambananCarousel(highlights = randomHighlights)
                 }
 
                 // Action Cards Row (Explore & List)
