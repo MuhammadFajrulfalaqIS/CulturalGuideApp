@@ -35,6 +35,7 @@ import com.example.cultural_navigation_papb.data.prambananSummaries
 import com.example.cultural_navigation_papb.data.viewmodels.AuthViewModel
 import com.example.cultural_navigation_papb.ui.theme.CulturalnavigationpapbTheme
 import kotlinx.coroutines.delay
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,6 +49,17 @@ fun HomeScreen(
 ) {
     // Ambil data user saat ini (nama, email, foto) dari ViewModel
     val user by authViewModel.currentUser.collectAsState()
+
+    // Format username untuk ditampilkan dengan lebih baik
+    val displayName = user?.name?.let { name ->
+        // Capitalize first letter of each word
+        name.split(" ")
+            .joinToString(" ") { word ->
+                word.replaceFirstChar {
+                    if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+                }
+            }
+    } ?: "Pengunjung"
 
     // Warna tema coklat
     val darkBrown = Color(0xFF3E2723)
@@ -104,7 +116,7 @@ fun HomeScreen(
 
                         // Menampilkan Nama User Dinamis
                         Text(
-                            text = "Selamat Datang, ${user?.name ?: "Pengunjung"}!",
+                            text = "Selamat Datang, $displayName!",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -129,17 +141,17 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     ImageActionCard(
-                        text = "Explore",
+                        text = "Map Interaktif",
                         onClick = onNavigateToMap,
                         imageUrl = R.drawable.explore_pic,
                         modifier = Modifier.weight(1f)
                     )
 
                     ImageActionCard(
-                        text = "List",
+                        text = "Semua Destinasi",
                         onClick = onNavigateToList,
                         imageUrl = R.drawable.photos_pic,
-                        badgeText = "2 photos",
+
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -266,10 +278,18 @@ fun ImageActionCard(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
+            // Gradient overlay for better text contrast
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.3f))
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Black.copy(alpha = 0.3f),
+                                Color.Black.copy(alpha = 0.6f)
+                            )
+                        )
+                    )
             )
             Text(
                 text = text,
