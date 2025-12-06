@@ -42,6 +42,7 @@ import com.example.cultural_navigation_papb.data.viewmodels.FeatureGuideViewMode
 import com.example.cultural_navigation_papb.ui.components.spotlight.*
 import com.example.cultural_navigation_papb.ui.theme.CulturalnavigationpapbTheme
 import kotlinx.coroutines.delay
+import java.util.Locale
 import kotlinx.coroutines.launch
 
 // ========== DEBUG FLAG ==========
@@ -62,6 +63,22 @@ fun HomeScreen(
 ) {
     val user by authViewModel.currentUser.collectAsState()
     val isGuideCompleted by featureGuideViewModel.isFeatureGuideCompleted.collectAsState()
+
+    // Format username untuk ditampilkan dengan lebih baik
+    val displayName = user?.name?.let { name ->
+        // Capitalize first letter of each word
+        name.split(" ")
+            .joinToString(" ") { word ->
+                word.replaceFirstChar {
+                    if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+                }
+            }
+    } ?: "Pengunjung"
+
+    // Pilih 3 destinasi acak dari semua destinasi yang tersedia
+    val randomHighlights = remember {
+        PrambananData.allTemples.shuffled().take(3)
+    }
 
     val darkBrown = Color(0xFF3E2723)
     val lightBrown = Color(0xFF5D4037)
@@ -218,7 +235,7 @@ fun HomeScreen(
 
                             // Menampilkan Nama User Dinamis
                             Text(
-                                text = "Selamat Datang, ${user?.name ?: "Pengunjung"}!",
+                                text = "Selamat Datang, $displayName!",
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
@@ -241,7 +258,7 @@ fun HomeScreen(
                                 )
                             }
                     ) {
-                        PrambananCarousel(highlights = PrambananData.allTemples.take(3))
+                        PrambananCarousel(highlights = randomHighlights)
                     }
 
                     // Action Cards with bounds tracking
@@ -265,7 +282,7 @@ fun HomeScreen(
                                 }
                         ) {
                             ImageActionCard(
-                                text = "Explore",
+                                text = "Map Interaktif",
                                 onClick = onNavigateToMap,
                                 imageUrl = R.drawable.explore_pic,
                                 modifier = Modifier.fillMaxWidth()
@@ -286,10 +303,9 @@ fun HomeScreen(
                                 }
                         ) {
                             ImageActionCard(
-                                text = "List",
+                                text = "Semua Destinasi",
                                 onClick = onNavigateToList,
                                 imageUrl = R.drawable.photos_pic,
-                                badgeText = "2 photos",
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }
@@ -412,22 +428,7 @@ fun PrambananCarousel(highlights: List<Place>) {
                     }
                 }
             }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                contentAlignment = Alignment.TopCenter
-            ) {
-                Text(
-                    text = "Slides Carousel",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier
-                        .background(Color.Black.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
-                )
-            }
+
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -474,7 +475,14 @@ fun ImageActionCard(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.3f))
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Black.copy(alpha = 0.3f),
+                                Color.Black.copy(alpha = 0.6f)
+                            )
+                        )
+                    )
             )
             Text(
                 text = text,
