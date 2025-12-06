@@ -23,7 +23,9 @@ googleServices = "4.4.4"
 foundation = "1.9.4"
 gson = "2.10.1"
 coil = "2.5.0"
-    accompanist = "0.32.0" # Accompanist untuk Pager dan utilities
+accompanist = "0.32.0" # Accompanist untuk Pager dan utilities
+lottie = "6.1.0" # Lottie animations
+datastore = "1.1.1" # DataStore preferences
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -76,6 +78,12 @@ accompanist-pager-indicators = { group = "com.google.accompanist", name = "accom
 
 # JSON Parsing (Gson)
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+
+# Lottie Animations
+lottie-compose = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottie" }
+
+# DataStore
+datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

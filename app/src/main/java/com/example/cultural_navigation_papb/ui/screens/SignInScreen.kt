@@ -13,14 +13,15 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.cultural_navigation_papb.data.viewmodels.AuthViewModel
+import android.util.Log
 
 @Composable
 fun SignInScreen(
     onSignInSuccess: () -> Unit, // Callback ketika login berhasil
     onNavigateToSignUp: () -> Unit,
-    viewModel: AuthViewModel = viewModel()
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -28,6 +29,16 @@ fun SignInScreen(
 
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMsg by viewModel.errorMsg.collectAsState()
+    val loginSuccess by viewModel.loginSuccess.collectAsState()
+
+    // PENTING: Navigasi dilakukan dari LaunchedEffect, bukan dari callback
+    LaunchedEffect(loginSuccess) {
+        if (loginSuccess) {
+            Log.d("SignInScreen", "Login success detected, navigating...")
+            viewModel.resetLoginSuccess()
+            onSignInSuccess()
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -81,9 +92,7 @@ fun SignInScreen(
 
         Button(
             onClick = {
-                viewModel.signIn(email, password) {
-                    onSignInSuccess()
-                }
+                viewModel.signIn(email, password)
             },
             enabled = !isLoading && email.isNotEmpty() && password.isNotEmpty(),
             modifier = Modifier.fillMaxWidth(),

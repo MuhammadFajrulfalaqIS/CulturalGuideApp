@@ -1,24 +1,35 @@
 package com.example.cultural_navigation_papb.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
@@ -28,6 +39,8 @@ import com.example.cultural_navigation_papb.data.viewmodels.ReviewViewModel
 import com.example.cultural_navigation_papb.ui.theme.CulturalnavigationpapbTheme
 import com.example.cultural_navigation_papb.ui.components.ReviewSection
 import com.example.cultural_navigation_papb.ui.components.ImprovedReviewDialog
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 // Helper Composable for Section Titles
 @Composable
@@ -103,6 +116,22 @@ fun DetailScreen(
 
     // 5. Dialog state for adding review
     var showAddReviewDialog by remember { mutableStateOf(false) }
+
+    // ✅ NEW: State for photo preview dialog
+    var showPhotoPreview by remember { mutableStateOf(false) }
+    var selectedPhotoIndex by remember { mutableStateOf(0) }
+
+    // ✅ Store carousel images for dialog access
+    val carouselImages = remember(place) {
+        place?.let {
+            listOf(
+                it.imageUrl,
+                com.example.cultural_navigation_papb.R.drawable.explore_pic,
+                com.example.cultural_navigation_papb.R.drawable.photos_pic,
+                com.example.cultural_navigation_papb.R.drawable.prambanan_shadow
+            )
+        } ?: emptyList()
+    }
 
     // ✅ NEW: Auto-open review dialog jika dipanggil dari notifikasi
     LaunchedEffect(openReviewDialogOnStart) {
@@ -197,18 +226,91 @@ fun DetailScreen(
                         .padding(paddingValues)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    // --- 1. Header Image ---
+                    // --- 1. Photo Carousel with Multiple Images ---
+                    val carouselImages = remember {
+                        listOf(
+                            currentPlace.imageUrl,
+                            com.example.cultural_navigation_papb.R.drawable.explore_pic,
+                            com.example.cultural_navigation_papb.R.drawable.photos_pic,
+                            com.example.cultural_navigation_papb.R.drawable.prambanan_shadow
+                        )
+                    }
+
+                    val pagerState = rememberPagerState(pageCount = { carouselImages.size })
+                    val scope = rememberCoroutineScope()
+
+                    // Auto-scroll every 3 seconds
+                    LaunchedEffect(pagerState.currentPage) {
+                        while (true) {
+                            delay(3000)
+                            scope.launch {
+                                val nextPage = (pagerState.currentPage + 1) % carouselImages.size
+                                pagerState.animateScrollToPage(nextPage)
+                            }
+                        }
+                    }
+
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(280.dp)
+                            .height(320.dp)
                     ) {
-                        AsyncImage(
-                            model = currentPlace.imageUrl,
-                            contentDescription = currentPlace.name,
-                            contentScale = ContentScale.Crop,
+                        HorizontalPager(
+                            state = pagerState,
                             modifier = Modifier.fillMaxSize()
-                        )
+                        ) { page ->
+                            AsyncImage(
+                                model = carouselImages[page],
+                                contentDescription = "${currentPlace.name} Image ${page + 1}",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clickable {
+                                        // ✅ Open photo preview when image is clicked
+                                        selectedPhotoIndex = page
+                                        showPhotoPreview = true
+                                    },
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+
+                        // Carousel indicators
+                        Row(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            repeat(carouselImages.size) { index ->
+                                Box(
+                                    modifier = Modifier
+                                        .size(10.dp)
+                                        .background(
+                                            color = if (index == pagerState.currentPage)
+                                                Color.White
+                                            else
+                                                Color.White.copy(alpha = 0.5f),
+                                            shape = RoundedCornerShape(5.dp)
+                                        )
+                                )
+                            }
+                        }
+
+                        // Page counter overlay
+                        Surface(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(16.dp),
+                            shape = RoundedCornerShape(20.dp),
+                            color = Color.Black.copy(alpha = 0.6f)
+                        ) {
+                            Text(
+                                text = "${pagerState.currentPage + 1} / ${carouselImages.size}",
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.White,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
                     }
 
                     // --- 2. Content Section ---
@@ -328,6 +430,153 @@ fun DetailScreen(
                 place = dialogPlace,
                 onDismiss = { showAddReviewDialog = false }
             )
+        }
+
+        // ✅ NEW: Photo Preview Dialog
+        val previewPlace = place
+        if (showPhotoPreview && previewPlace != null && carouselImages.isNotEmpty()) {
+            PhotoPreviewDialog(
+                images = carouselImages,
+                initialPage = selectedPhotoIndex,
+                placeName = previewPlace.name,
+                onDismiss = { showPhotoPreview = false }
+            )
+        }
+    }
+}
+
+/**
+ * ✅ Photo Preview Dialog Component
+ * Full-screen dialog untuk preview foto dengan swipe navigation
+ */
+@Composable
+private fun PhotoPreviewDialog(
+    images: List<Any>, // Support both String URLs and Drawable resources
+    initialPage: Int = 0,
+    placeName: String = "",
+    onDismiss: () -> Unit
+) {
+    val pagerState = rememberPagerState(
+        initialPage = initialPage.coerceIn(0, images.size - 1),
+        pageCount = { images.size }
+    )
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+        ) {
+            // Image Pager with swipe support
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AsyncImage(
+                        model = images[page],
+                        contentDescription = "$placeName - Photo ${page + 1}",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable { onDismiss() },
+                        contentScale = ContentScale.Fit
+                    )
+                }
+            }
+
+            // Top bar with close button and counter
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .align(Alignment.TopCenter),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Image counter
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color.Black.copy(alpha = 0.6f)
+                ) {
+                    Text(
+                        text = "${pagerState.currentPage + 1} / ${images.size}",
+                        color = Color.White,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
+
+                // Close button
+                IconButton(
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            color = Color.Black.copy(alpha = 0.6f),
+                            shape = CircleShape
+                        )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Tutup",
+                        tint = Color.White
+                    )
+                }
+            }
+
+            // Bottom indicators
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                repeat(images.size) { index ->
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .background(
+                                color = if (index == pagerState.currentPage)
+                                    Color.White
+                                else
+                                    Color.White.copy(alpha = 0.4f),
+                                shape = CircleShape
+                            )
+                    )
+                }
+            }
+
+            // Place name overlay (optional)
+            if (placeName.isNotEmpty()) {
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 60.dp)
+                        .fillMaxWidth(0.8f),
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color.Black.copy(alpha = 0.6f)
+                ) {
+                    Text(
+                        text = placeName,
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
         }
     }
 }

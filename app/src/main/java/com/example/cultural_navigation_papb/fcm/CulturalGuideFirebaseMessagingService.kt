@@ -40,6 +40,9 @@ class CulturalGuideFirebaseMessagingService : FirebaseMessagingService() {
     @Inject
     lateinit var database: AppDatabase
 
+    @Inject
+    lateinit var fcmNotificationManager: FCMNotificationManager
+
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
 

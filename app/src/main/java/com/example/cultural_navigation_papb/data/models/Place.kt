@@ -63,7 +63,7 @@ data class GeofenceInfo(
     val id: String,
     val latitude: Double,
     val longitude: Double,
-    val radius: Float = 75f,
+    val radius: Float = 30f,
     val transitionTypes: Int = com.google.android.gms.location.Geofence.GEOFENCE_TRANSITION_ENTER,
     val expirationDuration: Long = com.google.android.gms.location.Geofence.NEVER_EXPIRE
 )

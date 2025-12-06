@@ -49,12 +49,6 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideFirebaseFirestore(): FirebaseFirestore {
-        return FirebaseFirestore.getInstance()
-    }
-
-    @Provides
-    @Singleton
     fun provideFirestoreService(firestore: FirebaseFirestore): FirestoreService {
         return FirestoreService(firestore)
     }
