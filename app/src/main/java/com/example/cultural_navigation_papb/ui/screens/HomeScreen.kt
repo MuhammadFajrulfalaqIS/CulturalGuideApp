@@ -49,18 +49,18 @@ fun HomeScreen(
 ) {
     // Ambil data user saat ini (nama, email, foto) dari ViewModel
     val user by authViewModel.currentUser.collectAsState()
-
+    
     // Format username untuk ditampilkan dengan lebih baik
     val displayName = user?.name?.let { name ->
         // Capitalize first letter of each word
         name.split(" ")
             .joinToString(" ") { word ->
-                word.replaceFirstChar {
-                    if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+                word.replaceFirstChar { 
+                    if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() 
                 }
             }
     } ?: "Pengunjung"
-
+    
     // Pilih 3 destinasi acak dari semua destinasi yang tersedia
     val randomHighlights = remember {
         PrambananData.allTemples.shuffled().take(3)
