@@ -23,7 +23,7 @@ import com.example.cultural_navigation_papb.data.dao.VisitedPlaceDao
  */
 @Database(
     entities = [Place::class, Review::class, User::class, SavedPlace::class, VisitedPlace::class],
-    version = 10, // Increment version untuk trigger database clearing
+    version = 11, // Increment version untuk trigger database clearing
     exportSchema = false
 )
 @TypeConverters(Converters::class)

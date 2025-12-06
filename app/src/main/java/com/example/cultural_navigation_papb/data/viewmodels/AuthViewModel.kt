@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cultural_navigation_papb.data.database.AppDatabase
 import com.example.cultural_navigation_papb.data.models.User
+import com.example.cultural_navigation_papb.fcm.FCMNotificationManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 import kotlinx.coroutines.tasks.await
@@ -15,8 +16,15 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import android.util.Log
 
-class AuthViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class AuthViewModel @Inject constructor(
+    application: Application,
+    private val fcmNotificationManager: FCMNotificationManager
+) : AndroidViewModel(application) {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val userDao = AppDatabase.getDatabase(application).userDao()
 
@@ -29,6 +37,10 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _errorMsg = MutableStateFlow<String?>(null)
     val errorMsg = _errorMsg.asStateFlow()
+
+    // PENTING: State untuk menandai login berhasil (untuk trigger navigasi dari UI)
+    private val _loginSuccess = MutableStateFlow(false)
+    val loginSuccess = _loginSuccess.asStateFlow()
 
     init {
         // Cek sesi login saat aplikasi dibuka pertama kali
@@ -49,65 +61,102 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     fun signUp(email: String, pass: String, name: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
             _isLoading.value = true
+            _errorMsg.value = null
             try {
+                Log.d("AuthViewModel", "Starting signup...")
+
                 // 1. Buat akun di Firebase
                 val result = auth.createUserWithEmailAndPassword(email, pass).await()
                 val uid = result.user?.uid ?: throw Exception("Gagal mendapatkan UID")
+
+                Log.d("AuthViewModel", "Firebase signup successful, uid: $uid")
 
                 // 2. Simpan data profil ke Database Lokal (Room)
                 val newUser = User(id = uid, name = name, email = email)
                 userDao.insertUser(newUser)
 
+                Log.d("AuthViewModel", "User saved to local database")
+
                 // 3. Mulai pantau data
                 startObservingUser(uid)
 
-                // 4. Sukses
+                Log.d("AuthViewModel", "Observer started")
+
+                // 4. Set loading false SEBELUM callback
+                _isLoading.value = false
+
+                // 5. Callback untuk navigasi
+                Log.d("AuthViewModel", "Calling onSuccess callback...")
                 onSuccess()
+
+                Log.d("AuthViewModel", "Signup complete!")
+
             } catch (e: Exception) {
                 _errorMsg.value = e.message
-            } finally {
                 _isLoading.value = false
+                Log.e("AuthViewModel", "Signup failed", e)
             }
         }
     }
 
-    fun signIn(email: String, pass: String, onSuccess: () -> Unit) {
+    fun signIn(email: String, pass: String) {
         viewModelScope.launch {
             _isLoading.value = true
-            _errorMsg.value = null // Reset error
+            _errorMsg.value = null
+            _loginSuccess.value = false
+
             try {
+                Log.d("AuthViewModel", "Starting login process...")
+
                 // 1. Login ke Firebase Authentication
                 val result = auth.signInWithEmailAndPassword(email, pass).await()
                 val firebaseUser = result.user ?: throw Exception("Login gagal")
                 val uid = firebaseUser.uid
 
+                Log.d("AuthViewModel", "Firebase login successful, uid: $uid")
+
                 // 2. Cek sinkronisasi data (PENTING: Jika login di HP baru)
-                // Kita pakai .first() untuk cek sekali saja tanpa blocking selamanya
                 val localUser = userDao.getUser(uid).first()
 
                 if (localUser == null) {
-                    // Jika login sukses tapi data tidak ada di HP ini (misal install ulang)
-                    // Maka buat data lokal baru berdasarkan info Firebase
+                    Log.d("AuthViewModel", "Creating local user data...")
+                    // Jika login sukses tapi data tidak ada di HP ini
                     val syncedUser = User(
                         id = uid,
-                        name = firebaseUser.displayName ?: "User", // Pakai nama default jika kosong
+                        name = firebaseUser.displayName ?: "User",
                         email = email
                     )
                     userDao.insertUser(syncedUser)
+                    Log.d("AuthViewModel", "Local user created")
+                } else {
+                    Log.d("AuthViewModel", "Local user exists: ${localUser.name}")
                 }
 
                 // 3. Mulai pantau data user di background
                 startObservingUser(uid)
 
-                // 4. PINDAH LAYAR (Panggil onSuccess sekarang, jangan tunggu collect selesai)
-                onSuccess()
+                Log.d("AuthViewModel", "Observer started")
+
+                // 4. PENTING: Set loading false SEBELUM mengubah success state
+                _isLoading.value = false
+
+                // 5. Set success flag untuk trigger navigasi di UI
+                _loginSuccess.value = true
+
+                Log.d("AuthViewModel", "Login complete, loginSuccess set to true")
 
             } catch (e: Exception) {
                 _errorMsg.value = "Login Gagal: ${e.message}"
-            } finally {
                 _isLoading.value = false
+                _loginSuccess.value = false
+                Log.e("AuthViewModel", "Login failed: ${e.message}", e)
             }
         }
+    }
+
+    // Reset login success state
+    fun resetLoginSuccess() {
+        _loginSuccess.value = false
     }
 
     fun signOut(onComplete: () -> Unit) {

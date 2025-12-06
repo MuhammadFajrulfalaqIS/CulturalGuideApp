@@ -109,6 +109,12 @@ dependencies {
     implementation(libs.accompanist.pager)
     implementation(libs.accompanist.pager.indicators)
 
+    // Lottie Animations
+    implementation(libs.lottie.compose)
+
+    // DataStore Preferences
+    implementation(libs.datastore.preferences)
+
     // Core Compose
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

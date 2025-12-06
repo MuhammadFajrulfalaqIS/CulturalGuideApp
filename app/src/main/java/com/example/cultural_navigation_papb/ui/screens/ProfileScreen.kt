@@ -28,7 +28,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.cultural_navigation_papb.data.viewmodels.AuthViewModel
@@ -40,7 +40,7 @@ import java.io.File
 fun ProfileScreen(
     onSignOutSuccess: () -> Unit = {},
     onNavigateToInbox: () -> Unit = {}, // Callback untuk ke Inbox
-    viewModel: AuthViewModel = viewModel()
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
     val user by viewModel.currentUser.collectAsState()
     var showEditDialog by remember { mutableStateOf(false) }
