@@ -7,8 +7,10 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.cultural_navigation_papb.data.dao.PlaceDao
 import com.example.cultural_navigation_papb.data.dao.ReviewDao
+import com.example.cultural_navigation_papb.data.dao.NarrationDao
 import com.example.cultural_navigation_papb.data.models.Place
 import com.example.cultural_navigation_papb.data.models.Review
+import com.example.cultural_navigation_papb.data.models.Narration
 import com.example.cultural_navigation_papb.data.converters.Converters
 import com.example.cultural_navigation_papb.data.models.User
 import com.example.cultural_navigation_papb.data.dao.UserDao
@@ -22,8 +24,8 @@ import com.example.cultural_navigation_papb.data.dao.VisitedPlaceDao
  * Menyimpan data tempat wisata dan review
  */
 @Database(
-    entities = [Place::class, Review::class, User::class, SavedPlace::class, VisitedPlace::class],
-    version = 11, // Increment version untuk trigger database clearing
+    entities = [Place::class, Review::class, User::class, SavedPlace::class, VisitedPlace::class, Narration::class],
+    version = 12, // Increment version untuk include Narration
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -34,6 +36,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun savedPlaceDao(): SavedPlaceDao
     abstract fun visitedPlaceDao(): VisitedPlaceDao
+    abstract fun narrationDao(): NarrationDao
 
     companion object {
         @Volatile

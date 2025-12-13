@@ -12,9 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,9 +34,14 @@ import coil.compose.AsyncImage
 import com.example.cultural_navigation_papb.data.viewmodels.InboxViewModel
 import com.example.cultural_navigation_papb.data.viewmodels.PlaceViewModel
 import com.example.cultural_navigation_papb.data.viewmodels.ReviewViewModel
+import com.example.cultural_navigation_papb.data.audio.AudioPlayerState
+import com.example.cultural_navigation_papb.data.models.Narration
+import com.example.cultural_navigation_papb.data.models.Place
 import com.example.cultural_navigation_papb.ui.theme.CulturalnavigationpapbTheme
 import com.example.cultural_navigation_papb.ui.components.ReviewSection
 import com.example.cultural_navigation_papb.ui.components.ImprovedReviewDialog
+import com.example.cultural_navigation_papb.ui.components.AudioPlayerControls
+import com.example.cultural_navigation_papb.ui.components.AudioGuidePlayerDialog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -64,7 +67,9 @@ fun DetailScreen(
     // ViewModel untuk fitur download offline (Database Lokal)
     inboxViewModel: InboxViewModel = viewModel(),
     // ViewModel untuk review system
-    reviewViewModel: ReviewViewModel = hiltViewModel()
+    reviewViewModel: ReviewViewModel = hiltViewModel(),
+    // ✅ NEW: ViewModel untuk Audio Guide
+    audioGuideViewModel: com.example.cultural_navigation_papb.data.viewmodels.AudioGuideViewModel = hiltViewModel()
 ) {
     // 1. Ambil data place berdasarkan ID dengan fallback ke default place
     val place by remember(placeId) {
@@ -149,6 +154,25 @@ fun DetailScreen(
         }
     }
 
+    // ✅ NEW: Audio Guide states
+    val audioPlayerState by audioGuideViewModel.playerState.collectAsState()
+    val audioProgress by audioGuideViewModel.progress.collectAsState()
+    val audioSpeed by audioGuideViewModel.currentSpeed.collectAsState()
+    val isGeneratingNarration by audioGuideViewModel.isGenerating.collectAsState()
+    val currentNarration by audioGuideViewModel.currentNarration.collectAsState()
+    val audioError by audioGuideViewModel.errorMessage.collectAsState()
+    val distanceToPlace by audioGuideViewModel.distanceToPlace.collectAsState()
+
+    var showAudioPlayer by remember { mutableStateOf(false) }
+
+    // ✅ NEW: Check proximity and update distance when place changes
+    LaunchedEffect(place) {
+        place?.let {
+            audioGuideViewModel.updateDistance(it)
+            audioGuideViewModel.checkProximity(it)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -163,34 +187,62 @@ fun DetailScreen(
                 }
             )
         },
-        // 3. Tambahkan Tombol Aksi (FAB) untuk Download
+        // 3. Tambahkan Tombol Aksi (FAB) untuk Download dan Audio Guide
         floatingActionButton = {
             val fabPlace = place
             if (fabPlace != null) {
-                FloatingActionButton(
-                    onClick = {
-                        if (isDownloaded) {
-                            // Jika sudah ada, hapus dari inbox
-                            inboxViewModel.removePlace(fabPlace.id)
+                // ✅ NEW: Column untuk multiple FABs
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Audio Guide Button
+                    FloatingActionButton(
+                        onClick = {
+                            if (currentNarration == null && !isGeneratingNarration) {
+                                audioGuideViewModel.loadNarration(fabPlace)
+                            }
+                            showAudioPlayer = true
+                        },
+                        containerColor = Color(0xFFFF6F00), // Orange accent
+                        contentColor = Color.White
+                    ) {
+                        if (isGeneratingNarration) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
                         } else {
-                            // Jika belum, simpan ke inbox
-                            inboxViewModel.downloadPlace(
-                                id = fabPlace.id,
-                                name = fabPlace.name,
-                                desc = fabPlace.detailedDescription, // Simpan deskripsi lengkap
-                                imageResId = fabPlace.imageUrl // Simpan ID gambar
+                            Icon(
+                                imageVector = Icons.Default.VolumeUp,
+                                contentDescription = "Audio Guide"
                             )
                         }
-                    },
-                    // Ubah warna: Hijau jika tersimpan, Dark brown jika belum
-                    containerColor = if (isDownloaded) Color(0xFF4CAF50) else Color(0xFF4A3428),
-                    contentColor = Color.White
-                ) {
-                    // Ubah ikon: Ceklis jika tersimpan, Panah bawah jika belum
-                    Icon(
-                        imageVector = if (isDownloaded) Icons.Default.Check else Icons.Default.Download,
-                        contentDescription = if (isDownloaded) "Hapus dari Offline" else "Simpan Offline"
-                    )
+                    }
+
+                    // Download Button
+                    FloatingActionButton(
+                        onClick = {
+                            if (isDownloaded) {
+                                inboxViewModel.removePlace(fabPlace.id)
+                            } else {
+                                inboxViewModel.downloadPlace(
+                                    id = fabPlace.id,
+                                    name = fabPlace.name,
+                                    desc = fabPlace.detailedDescription,
+                                    imageResId = fabPlace.imageUrl
+                                )
+                            }
+                        },
+                        containerColor = if (isDownloaded) Color(0xFF4CAF50) else Color(0xFF4A3428),
+                        contentColor = Color.White
+                    ) {
+                        Icon(
+                            imageVector = if (isDownloaded) Icons.Default.Check else Icons.Default.Download,
+                            contentDescription = if (isDownloaded) "Hapus dari Offline" else "Simpan Offline"
+                        )
+                    }
                 }
             }
         }
@@ -441,6 +493,27 @@ fun DetailScreen(
                 placeName = previewPlace.name,
                 onDismiss = { showPhotoPreview = false }
             )
+        }
+
+        // ✅ NEW: Audio Guide Player
+        if (showAudioPlayer) {
+            val dialogPlace = place // Create local reference
+            if (dialogPlace != null) {
+                AudioGuidePlayerDialog(
+                    onDismiss = { showAudioPlayer = false },
+                    audioPlayerState = audioPlayerState,
+                    audioProgress = audioProgress,
+                    audioSpeed = audioSpeed,
+                    isGeneratingNarration = isGeneratingNarration,
+                    currentNarration = currentNarration,
+                    audioError = audioError,
+                    distanceToPlace = distanceToPlace,
+                    onPlayPause = { audioGuideViewModel.togglePlayback() },
+                    onStop = { audioGuideViewModel.stopPlayback() },
+                    onSpeedChange = { speed -> audioGuideViewModel.setSpeed(speed) },
+                    onRequestNarration = { audioGuideViewModel.requestNarration(dialogPlace) }
+                )
+            }
         }
     }
 }
